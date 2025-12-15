@@ -3,6 +3,7 @@
 #include <coulang/string.h>
 #include <coulang/token.h>
 #include <ctype.h>
+#include <linux/limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -151,6 +152,9 @@ enum CoulangTokenKind get_keyword(String s) {
   if (strcmp(s.buffer, "fn") == 0) {
     return COULANG_TOKEN_KIND_KEYWORD_FN;
   }
+  if (strcmp(s.buffer, "while") == 0) {
+    return COULANG_TOKEN_KIND_KEYWORD_WHILE;
+  }
   return COULANG_TOKEN_KIND_IDENTIFIER;
 }
 
@@ -193,6 +197,36 @@ CoulangTokens lex(char *path) {
     case ')':
       token = init__CoulangToken(COULANG_TOKEN_KIND_RPAREN);
       break;
+    case '=':
+      if (get_next_char__FileIterator(&file) == '=') {
+        consume_char__FileIterator(&file);
+        token = init__CoulangToken(COULANG_TOKEN_KIND_EQ_EQ);
+        break;
+      }
+      token = init__CoulangToken(COULANG_TOKEN_KIND_EQ);
+      break;
+    case '!':
+      if (get_next_char__FileIterator(&file) == '=') {
+        consume_char__FileIterator(&file);
+        token = init__CoulangToken(COULANG_TOKEN_KIND_BANG_EQ);
+        break;
+      }
+      token = init__CoulangToken(COULANG_TOKEN_KIND_BANG);
+      break;
+    case '<':
+      if (get_next_char__FileIterator(&file) == '=') {
+        consume_char__FileIterator(&file);
+        token = init__CoulangToken(COULANG_TOKEN_KIND_LSHIFT_EQ);
+        break;
+      }
+      token = init__CoulangToken(COULANG_TOKEN_KIND_LSHIFT);
+    case '>':
+      if (get_next_char__FileIterator(&file) == '=') {
+        consume_char__FileIterator(&file);
+        token = init__CoulangToken(COULANG_TOKEN_KIND_RSHIFT_EQ);
+        break;
+      }
+      token = init__CoulangToken(COULANG_TOKEN_KIND_RSHIFT);
     case '\n':
       continue;
     case '"':
@@ -201,7 +235,9 @@ CoulangTokens lex(char *path) {
       while (current_char != '"') {
         add__String(&s, current_char);
         current_char = consume_char__FileIterator(&file);
-        // printf("%s\n", s.buffer);
+        if (is_done__FileIterator(&file)) {
+          COULANG_INTERPRETER_ERROR("MISSING THE ENDING \" SON OF A BEACH");
+        }
       }
       token = init_string__CoulangToken(s);
       break;
@@ -209,13 +245,16 @@ CoulangTokens lex(char *path) {
       String s = init__String();
       bool is_float = false;
       while (isdigit(current_char)) {
-        if (get_next_char__FileIterator(&file) == '.') {
+        if (get_current_char__FileIterator(&file) == '.') {
+          add__String(&s, current_char);
+          current_char = consume_char__FileIterator(&file);
           if (!is_float) {
             is_float = true;
           } else {
-            COULANG_ERROR("the digit has to much point mother fucker")
+            COULANG_INTERPRETER_ERROR(
+                "the digit has to much point mother fucker at: %zu, %zu",
+                file.code_pos.line, file.code_pos.colomne);
           }
-          consume_char__FileIterator(&file);
         }
         add__String(&s, current_char);
         current_char = consume_char__FileIterator(&file);
