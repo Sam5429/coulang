@@ -1,4 +1,4 @@
 #include "coulang/token.h"
 #include <stddef.h>
 
-extern CoulangTokens lex(char *path);
+extern CoulangTokens lex(const char *path);

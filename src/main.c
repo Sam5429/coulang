@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "coulang/parser.h"
-#include "coulang/token.h"
+#include <coulang/parser.h>
+#include <coulang/token.h>
 #include <coulang/lexer.h>
 #include <coulang/macros.h>
 #include <stdio.h>
@@ -32,9 +32,14 @@ int main(int argc, char **argv) {
     COULANG_ERROR("donne les bon args fdp\n");
     exit(1);
   }
-  CoulangTokens tokens = lex(argv[1]);
+
+  const char *path = argv[1];
+  CoulangTokens tokens = lex(path);
   TokensIterator ite = init__TokensIterator(&tokens);
-  parse_declaration__Parser(&ite);
+  CoulangDeclFunctionBody body = init__CoulangDeclFunctionBody();
+
+  parse_declarations__Parser(&ite, &body);
+  deinit__CoulangDeclFunctionBody(&body);
   deinit__CoulangTokens(&tokens);
 
   return 0;

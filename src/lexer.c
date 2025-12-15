@@ -26,7 +26,7 @@ typedef struct {
   Position code_pos;
 } FileIterator;
 
-FileIterator read_file__FileIterator(char *path) {
+FileIterator read_file__FileIterator(const char *path) {
   FILE *f = fopen(path, "r");
   if (f == NULL) {
     COULANG_ERROR("error while opening the file");
@@ -134,6 +134,9 @@ enum CoulangTokenKind get_keyword(String s) {
   if (strcmp(s.buffer, "else") == 0) {
     return COULANG_TOKEN_KIND_KEYWORD_ELSE;
   }
+  if (strcmp(s.buffer, "elif") == 0) {
+    return COULANG_TOKEN_KIND_KEYWORD_ELIF;
+  }
   if (strcmp(s.buffer, "int") == 0) {
     return COULANG_TOKEN_KIND_KEYWORD_INT;
   }
@@ -161,7 +164,7 @@ enum CoulangTokenKind get_keyword(String s) {
   return COULANG_TOKEN_KIND_IDENTIFIER;
 }
 
-CoulangTokens lex(char *path) {
+CoulangTokens lex(const char *path) {
   FileIterator file = read_file__FileIterator(path);
   CoulangToken token = {0};
   CoulangTokens tokens = init__CoulangTokens();

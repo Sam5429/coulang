@@ -34,6 +34,7 @@ typedef struct {
 static inline TokensIterator init__TokensIterator(CoulangTokens *tokens) {
   return (TokensIterator){.tokens = tokens, .content_pos = 0};
 }
-extern CoulangDecl *parse_declaration__Parser(TokensIterator *ite);
+
+void parse_declarations__Parser(TokensIterator *ite, CoulangDeclFunctionBody *body);
 
 #endif // COULANG_PARSER_H
