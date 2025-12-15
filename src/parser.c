@@ -131,22 +131,22 @@ CoulangExpr *parse_primary_expr(TokensIterator *ite) {
   case COULANG_TOKEN_KIND_INTEGER:
     break;
   case COULANG_TOKEN_KIND_FLOAT:
-	expr = init_float__CoulangExpr(atof(current_token->float_.buffer));
+    expr = init_float__CoulangExpr(atof(current_token->float_.buffer));
 
-	break;
+    break;
   case COULANG_TOKEN_KIND_STRING:
-	expr = init_string__CoulangExpr(&current_token->string);
-	
-	break;
+    expr = init_string__CoulangExpr(&current_token->string);
+
+    break;
   case COULANG_TOKEN_KIND_KEYWORD_LIST:
     return parse_list(ite);
   case COULANG_TOKEN_KIND_BANG:
   case COULANG_TOKEN_KIND_MINUS:
-	return parse_unary_expr(ite);
+    return parse_unary_expr(ite);
   case COULANG_TOKEN_KIND_IDENTIFIER:
-	expr = init_identifier__CoulangExpr(&current_token->identifier);
+    expr = init_identifier__CoulangExpr(&current_token->identifier);
 
-	break;
+    break;
   default:
     COULANG_INTERPRETER_ERROR("unknown expression");
   }
@@ -158,66 +158,60 @@ CoulangExpr *parse_primary_expr(TokensIterator *ite) {
 
 CoulangExpr *parse_unary_expr(TokensIterator *ite) {}
 
-CoulangExpr *parse_binary_expr(TokensIterator *ite, CoulangExpr *left)
-{
-	static int tokens_to_precedences[] = {
-		[COULANG_TOKEN_KIND_STAR] = 100,
-		[COULANG_TOKEN_KIND_SLASH] = 100,
-		[COULANG_TOKEN_KIND_MODULO] = 100,
-		[COULANG_TOKEN_KIND_PLUS] = 90,
-		[COULANG_TOKEN_KIND_MINUS] = 90,
-		[COULANG_TOKEN_KIND_LSHIFT] = 85,
-		[COULANG_TOKEN_KIND_LSHIFT_EQ] = 85,
-		[COULANG_TOKEN_KIND_RSHIFT] = 85,
-		[COULANG_TOKEN_KIND_RSHIFT_EQ] = 85,
-		[COULANG_TOKEN_KIND_EQ_EQ] = 80,
-		[COULANG_TOKEN_KIND_BANG_EQ] = 80
-	};
-	static enum CoulangExprBinaryKind tokens_to_binary_kind[] = {
-		[COULANG_TOKEN_KIND_STAR] = COULANG_EXPR_BINARY_KIND_MUL,
-		[COULANG_TOKEN_KIND_SLASH] = COULANG_EXPR_BINARY_KIND_DIV,
-		[COULANG_TOKEN_KIND_MODULO] = COULANG_EXPR_BINARY_KIND_MOD,
-		[COULANG_TOKEN_KIND_PLUS] = COULANG_EXPR_BINARY_KIND_ADD,
-		[COULANG_TOKEN_KIND_MINUS] = COULANG_EXPR_BINARY_KIND_SUB,
-		[COULANG_TOKEN_KIND_LSHIFT] = COULANG_EXPR_BINARY_KIND_LESS,
-		[COULANG_TOKEN_KIND_LSHIFT_EQ] = COULANG_EXPR_BINARY_KIND_LESS_EQ,
-		[COULANG_TOKEN_KIND_RSHIFT] = COULANG_EXPR_BINARY_KIND_GREATER,
-		[COULANG_TOKEN_KIND_RSHIFT_EQ] = COULANG_EXPR_BINARY_KIND_GREATER_EQ,
-		[COULANG_TOKEN_KIND_EQ_EQ] = COULANG_EXPR_BINARY_KIND_EQ,
-		[COULANG_TOKEN_KIND_BANG_EQ] = COULANG_EXPR_BINARY_KIND_NOT_EQ
-	};
+CoulangExpr *parse_binary_expr(TokensIterator *ite, CoulangExpr *left) {
+  static int tokens_to_precedences[] = {
+      [COULANG_TOKEN_KIND_STAR] = 100,     [COULANG_TOKEN_KIND_SLASH] = 100,
+      [COULANG_TOKEN_KIND_MODULO] = 100,   [COULANG_TOKEN_KIND_PLUS] = 90,
+      [COULANG_TOKEN_KIND_MINUS] = 90,     [COULANG_TOKEN_KIND_LSHIFT] = 85,
+      [COULANG_TOKEN_KIND_LSHIFT_EQ] = 85, [COULANG_TOKEN_KIND_RSHIFT] = 85,
+      [COULANG_TOKEN_KIND_RSHIFT_EQ] = 85, [COULANG_TOKEN_KIND_EQ_EQ] = 80,
+      [COULANG_TOKEN_KIND_BANG_EQ] = 80};
+  static enum CoulangExprBinaryKind tokens_to_binary_kind[] = {
+      [COULANG_TOKEN_KIND_STAR] = COULANG_EXPR_BINARY_KIND_MUL,
+      [COULANG_TOKEN_KIND_SLASH] = COULANG_EXPR_BINARY_KIND_DIV,
+      [COULANG_TOKEN_KIND_MODULO] = COULANG_EXPR_BINARY_KIND_MOD,
+      [COULANG_TOKEN_KIND_PLUS] = COULANG_EXPR_BINARY_KIND_ADD,
+      [COULANG_TOKEN_KIND_MINUS] = COULANG_EXPR_BINARY_KIND_SUB,
+      [COULANG_TOKEN_KIND_LSHIFT] = COULANG_EXPR_BINARY_KIND_LESS,
+      [COULANG_TOKEN_KIND_LSHIFT_EQ] = COULANG_EXPR_BINARY_KIND_LESS_EQ,
+      [COULANG_TOKEN_KIND_RSHIFT] = COULANG_EXPR_BINARY_KIND_GREATER,
+      [COULANG_TOKEN_KIND_RSHIFT_EQ] = COULANG_EXPR_BINARY_KIND_GREATER_EQ,
+      [COULANG_TOKEN_KIND_EQ_EQ] = COULANG_EXPR_BINARY_KIND_EQ,
+      [COULANG_TOKEN_KIND_BANG_EQ] = COULANG_EXPR_BINARY_KIND_NOT_EQ};
 
-	CoulangToken *token = get_current_token__TokensIterator(ite);
-	int last_precedence = 0;
+  CoulangToken *token = get_current_token__TokensIterator(ite);
+  int last_precedence = 0;
 
-	while (token->kind == COULANG_TOKEN_KIND_STAR ||
-		   token->kind == COULANG_TOKEN_KIND_SLASH ||
-		   token->kind == COULANG_TOKEN_KIND_MODULO ||
-		   token->kind == COULANG_TOKEN_KIND_PLUS ||
-		   token->kind == COULANG_TOKEN_KIND_MINUS ||
-		   token->kind == COULANG_TOKEN_KIND_LSHIFT ||
-		   token->kind == COULANG_TOKEN_KIND_LSHIFT_EQ ||
-		   token->kind == COULANG_TOKEN_KIND_RSHIFT ||
-		   token->kind == COULANG_TOKEN_KIND_RSHIFT_EQ ||
-		   token->kind == COULANG_TOKEN_KIND_EQ_EQ ||
-		   token->kind == COULANG_TOKEN_KIND_BANG_EQ) {
-		int precedence = tokens_to_precedences[token->kind];
-		enum CoulangExprBinaryKind binary_kind = tokens_to_binary_kind[token->kind];
+  while (token->kind == COULANG_TOKEN_KIND_STAR ||
+         token->kind == COULANG_TOKEN_KIND_SLASH ||
+         token->kind == COULANG_TOKEN_KIND_MODULO ||
+         token->kind == COULANG_TOKEN_KIND_PLUS ||
+         token->kind == COULANG_TOKEN_KIND_MINUS ||
+         token->kind == COULANG_TOKEN_KIND_LSHIFT ||
+         token->kind == COULANG_TOKEN_KIND_LSHIFT_EQ ||
+         token->kind == COULANG_TOKEN_KIND_RSHIFT ||
+         token->kind == COULANG_TOKEN_KIND_RSHIFT_EQ ||
+         token->kind == COULANG_TOKEN_KIND_EQ_EQ ||
+         token->kind == COULANG_TOKEN_KIND_BANG_EQ) {
+    int precedence = tokens_to_precedences[token->kind];
+    enum CoulangExprBinaryKind binary_kind = tokens_to_binary_kind[token->kind];
 
-		consume_token__TokensIterator(ite);
+    consume_token__TokensIterator(ite);
 
-		CoulangExpr *right = parse_primary_expr(ite);
+    CoulangExpr *right = parse_primary_expr(ite);
 
-		last_precedence = precedence;
-		left = init_binary__CoulangExpr(init__CoulangExprBinary(binary_kind, left, right));
+    last_precedence = precedence;
+    left = init_binary__CoulangExpr(
+        init__CoulangExprBinary(binary_kind, left, right));
 
-		// 3 + 3 * 3
-		// 3 * 3 + 3
-		// ADD(3, MUL(3, 3))
-		if (left->kind == COULANG_EXPR_KIND_BINARY && last_precedence < precedence) {
-			// TODO:
-		}
-	}
+    // 3 + 3 * 3
+    // 3 * 3 + 3
+    // ADD(3, MUL(3, 3))
+    if (left->kind == COULANG_EXPR_KIND_BINARY &&
+        last_precedence < precedence) {
+      // TODO:
+    }
+  }
 }
 
 CoulangExpr *parse_expr(TokensIterator *ite) {
@@ -263,7 +257,6 @@ CoulangStmtIfBranch *parse_stmt_if_branch(TokensIterator *ite) {
   CoulangToken *current = consume_token__TokensIterator(ite);
 
   while (current->kind == COULANG_TOKEN_KIND_KEYWORD_IF ||
-         current->kind == COULANG_TOKEN_KIND_KEYWORD_ELSE ||
          current->kind == COULANG_TOKEN_KIND_KEYWORD_ELIF) {
     CoulangExpr *cond = parse_expr(ite);
     CoulangDeclFunctionBody body = parse_function_body__Parser(ite);
@@ -277,7 +270,15 @@ CoulangStmtIfBranch *parse_stmt_if_branch(TokensIterator *ite) {
 CoulangStmt parse_stmt_if(TokensIterator *ite) {
   consume_token__TokensIterator(ite);
 
-  parse_stmt_if_branch(ite);
+  CoulangStmtIfBranch *branch = parse_stmt_if_branch(ite);
+  CoulangDeclFunctionBody else_;
+  if (get_current_token__TokensIterator(ite)->kind ==
+      COULANG_TOKEN_KIND_KEYWORD_ELSE) {
+    consume_token__TokensIterator(ite);
+    else_ = parse_function_body__Parser(ite);
+  }
+
+  return init_if__CoulangStmt((CoulangStmtIf){.ifs = branch, .else_ = &else_});
 }
 
 CoulangStmt parse_stmt_return(TokensIterator *ite) {
