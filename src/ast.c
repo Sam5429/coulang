@@ -80,6 +80,12 @@ init_list__CoulangExpr(CoulangExprList list)
 	INIT_EXPR(COULANG_EXPR_KIND_LIST, .list = list);
 }
 
+CoulangExpr *
+init_grouping__CoulangExpr(CoulangExpr *grouping)
+{
+	INIT_EXPR(COULANG_EXPR_KIND_GROUPING, .grouping = grouping);
+}
+
 #undef INIT_EXPR
 
 void deinit__CoulangExpr(CoulangExpr *self)
@@ -93,9 +99,157 @@ void deinit__CoulangExpr(CoulangExpr *self)
 			deinit__CoulangExprList(&self->list);
 
 			break;
+		case COULANG_EXPR_KIND_GROUPING:
+			deinit__CoulangExpr(self->grouping);
+
+			break;
 		default:
 			break;
 	}
 
 	free(self);
+}
+
+void
+deinit__CoulangStmtIfBranch(CoulangStmtIfBranch *self)
+{
+	CoulangStmtIfBranch *current = self;
+
+	do {
+		CoulangStmtIfBranch *next = current->next;
+
+		deinit__CoulangExpr(current->cond);
+		deinit__CoulangDeclFunctionBody(current->body);
+		free(current->body);
+		free(current);
+
+		current = next;
+	} while (current);
+}
+
+void deinit__CoulangStmtIf(const CoulangStmtIf *const self)
+{
+	deinit__CoulangStmtIfBranch(self->ifs);
+	deinit__CoulangDeclFunctionBody(self->else_);
+	free(self->else_);
+}
+
+void deinit__CoulangStmtWhile(const CoulangStmtWhile *const self)
+{
+	deinit__CoulangExpr(self->cond);
+	deinit__CoulangDeclFunctionBody(self->body);
+	free(self->body);
+}
+
+void
+deinit__CoulangStmt(const CoulangStmt *const self)
+{
+	switch (self->kind) {
+		case COULANG_STMT_KIND_IF:
+			deinit__CoulangStmtIf(&self->if_);
+
+			break;
+		case COULANG_STMT_KIND_RETURN:
+			deinit__CoulangExpr(self->return_);
+
+			break;
+		case COULANG_STMT_KIND_WHILE:
+			deinit__CoulangStmtWhile(&self->while_);
+
+			break;
+		default:
+			COULANG_UNREACHABLE("unknown function stmt item kind");
+	}
+}
+
+CoulangDeclFunctionParam *
+init__CoulangDeclFunctionParam(const String *name, enum CoulangDataType data_type)
+{
+	CoulangDeclFunctionParam *self = COULANG_ALLOC(sizeof(CoulangDeclFunctionParam));
+
+	*self = (CoulangDeclFunctionParam){
+		.name = name,
+		.data_type = data_type,
+		.next = NULL,
+	};
+
+	return self;
+}
+
+void
+deinit__CoulangDeclFunctionParam(CoulangDeclFunctionParam *self)
+{
+	CoulangDeclFunctionParam *current = self;
+
+	do {
+		CoulangDeclFunctionParam *next = current->next;
+
+		free(current);
+
+		current = next;
+	} while (current);
+}
+
+void
+deinit__CoulangDeclFunctionBodyItem(CoulangDeclFunctionBodyItem *self)
+{
+	switch (self->kind) {
+		case COULANG_DECL_FUNCTION_BODY_ITEM_KIND_EXPR:
+			deinit__CoulangExpr(self->expr);
+
+			break;
+		case COULANG_DECL_FUNCTION_BODY_ITEM_KIND_STMT:
+			deinit__CoulangStmt(&self->stmt);
+
+			break;
+		case COULANG_DECL_FUNCTION_BODY_ITEM_KIND_DECL:
+			deinit__CoulangDecl(self->decl);
+
+			break;
+		default:
+			COULANG_UNREACHABLE("unknown function body item kind");
+	}
+}
+
+void
+add__CoulangDeclFunctionBody(CoulangDeclFunctionBody *self, CoulangDeclFunctionBodyItem item)
+{
+	if (!self->items) {
+		self->items = COULANG_ALLOC(self->capacity * sizeof(CoulangDeclFunctionBodyItem));
+	} else if (self->capacity == self->len) {
+		self->capacity *= 2;
+		self->items = COULANG_REALLOC(self->items, self->capacity * sizeof(CoulangDeclFunctionBodyItem));
+	}
+
+	self->items[self->len++] = item;
+}
+
+void
+deinit__CoulangDeclFunctionBody(const CoulangDeclFunctionBody *const self)
+{
+	for (size_t i = 0; i < self->len; ++i) {
+		deinit__CoulangDeclFunctionBodyItem(&self->items[i]);
+	}
+
+	free(self->items);
+}
+
+void deinit__CoulangDecl(const CoulangDecl *const self)
+{
+	switch (self->kind) {
+		case COULANG_DECL_KIND_LOAD:
+			deinit__CoulangDeclLoad(&self->load);
+
+			break;
+		case COULANG_DECL_KIND_FUNCTION:
+			deinit__CoulangDeclFunction(&self->function);
+
+			break;
+		case COULANG_DECL_KIND_VARIABLE:
+			deinit__CoulangDeclVariable(&self->variable);
+
+			break;
+		default:
+			COULANG_UNREACHABLE("unknown declaration kind");
+	}
 }

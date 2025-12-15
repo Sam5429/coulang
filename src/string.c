@@ -14,3 +14,16 @@ void add__String(String *self, char c) {
   self->buffer[self->len++] = c;
   self->buffer[self->len] = '\0';
 }
+
+void
+add__Strings(Strings *self, String s)
+{
+	if (!self->buffer) {
+		self->buffer = COULANG_ALLOC(self->capacity * sizeof(String));
+	} else if (self->len == self->capacity) {
+		self->capacity *= 2;
+		self->buffer = COULANG_REALLOC(self->buffer, self->capacity * sizeof(String));
+	}
+
+	self->buffer[self->len++] = s;
+}

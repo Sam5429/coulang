@@ -80,6 +80,7 @@ enum CoulangExprKind {
 	COULANG_EXPR_KIND_INTEGER,
 	COULANG_EXPR_KIND_FLOAT,
 	COULANG_EXPR_KIND_LIST,
+	COULANG_EXPR_KIND_GROUPING
 };
 
 typedef struct CoulangExpr {
@@ -91,6 +92,7 @@ typedef struct CoulangExpr {
 		uint64_t integer;
 		double float_;
 		CoulangExprList list;
+		CoulangExpr *grouping;
 	};
 } CoulangExpr;
 
@@ -109,6 +111,327 @@ init_float__CoulangExpr(double float_);
 CoulangExpr *
 init_list__CoulangExpr(CoulangExprList list);
 
+CoulangExpr *
+init_grouping__CoulangExpr(CoulangExpr *grouping);
+
 void deinit__CoulangExpr(CoulangExpr *self);
+
+enum CoulangDataType {
+	COULANG_DATA_TYPE_INT,
+	COULANG_DATA_TYPE_FLOAT,
+	COULANG_DATA_TYPE_LIST,
+	COULANG_DATA_TYPE_STR,
+	COULANG_DATA_TYPE_PTR,
+};
+
+typedef struct CoulangDeclFunctionBody CoulangDeclFunctionBody;
+
+typedef struct CoulangStmtIfBranch {
+	CoulangExpr *cond;
+	CoulangDeclFunctionBody *body;
+	struct CoulangStmtIfBranch *next;
+} CoulangStmtIfBranch;
+
+static inline CoulangStmtIfBranch
+init__CoulangStmtIfBranch(CoulangExpr *cond, CoulangDeclFunctionBody *body)
+{
+	return (CoulangStmtIfBranch){
+		.cond = cond,
+		.body = body,
+		.next = NULL
+	};
+}
+
+static inline void
+add__CoulangStmtIfBranch(CoulangStmtIfBranch *self, CoulangStmtIfBranch **tail)
+{
+	if (*tail) {
+		(*tail)->next = self;
+	}
+
+	*tail = self;
+}
+
+static void
+deinit__CoulangStmtIfBranch(CoulangStmtIfBranch *self);
+
+typedef struct {
+	CoulangStmtIfBranch *ifs;
+	CoulangDeclFunctionBody *else_;
+} CoulangStmtIf;
+
+static inline CoulangStmtIf
+init__CoulangStmtIf(CoulangStmtIfBranch *ifs, CoulangDeclFunctionBody *else_)
+{
+	return (CoulangStmtIf){
+		.ifs = ifs,
+		.else_ = else_
+	};
+}
+
+void deinit__CoulangStmtIf(const CoulangStmtIf *const self);
+
+typedef struct {
+	CoulangExpr *cond;
+	CoulangDeclFunctionBody *body;
+} CoulangStmtWhile;
+
+static inline CoulangStmtWhile
+init__CoulangStmtWhile(CoulangExpr *cond, CoulangDeclFunctionBody *body)
+{
+	return (CoulangStmtWhile){
+		.cond = cond,
+		.body = body
+	};
+}
+
+void deinit__CoulangStmtWhile(const CoulangStmtWhile *const self);
+
+enum CoulangStmtKind {
+	COULANG_STMT_KIND_IF,
+	COULANG_STMT_KIND_RETURN,
+	COULANG_STMT_KIND_WHILE,
+};
+
+typedef struct {
+	enum CoulangStmtKind kind;
+	union {
+		CoulangStmtIf if_;
+		CoulangExpr *return_;
+		CoulangStmtWhile while_;
+	};
+} CoulangStmt;
+
+static inline CoulangStmt
+init_if__CoulangStmt(CoulangStmtIf if_)
+{
+	return (CoulangStmt){
+		.kind = COULANG_STMT_KIND_IF,
+		.if_ = if_
+	};
+}
+
+static inline CoulangStmt
+init_return__CoulangStmt(CoulangExpr *return_)
+{
+	return (CoulangStmt){
+		.kind = COULANG_STMT_KIND_RETURN,
+		.return_ = return_
+	};
+}
+
+static inline CoulangStmt
+init_while__CoulangStmt(CoulangStmtWhile while_)
+{
+	return (CoulangStmt){
+		.kind = COULANG_STMT_KIND_WHILE,
+		.while_ = while_
+	};
+}
+
+void
+deinit__CoulangStmt(const CoulangStmt *const self);
+
+typedef struct CoulangDecl CoulangDecl;
+
+typedef struct {
+	const String *library;
+	Strings symbols;
+} CoulangDeclLoad;
+
+static inline CoulangDeclLoad
+init__CoulangDeclLoad(const String *library, Strings symbols)
+{
+	return (CoulangDeclLoad){
+		.library = library,
+		.symbols = symbols
+	};
+}
+
+static inline void
+deinit__CoulangDeclLoad(const CoulangDeclLoad *const self)
+{
+	deinit__Strings(&self->symbols);
+}
+
+typedef struct CoulangDeclFunctionParam {
+	const String *name;
+	enum CoulangDataType data_type;
+	struct CoulangDeclFunctionParam *next;
+} CoulangDeclFunctionParam;
+
+CoulangDeclFunctionParam *
+init__CoulangDeclFunctionParam(const String *name, enum CoulangDataType data_type);
+
+static inline void
+add__CoulangDeclFunctionParam(CoulangDeclFunctionParam *self, CoulangDeclFunctionParam **tail)
+{
+	if (*tail) {
+		(*tail)->next = self;
+	}
+
+	*tail = self;
+}
+
+void
+deinit__CoulangDeclFunctionParam(CoulangDeclFunctionParam *self);
+
+enum CoulangDeclFunctionBodyItemKind {
+	COULANG_DECL_FUNCTION_BODY_ITEM_KIND_EXPR,
+	COULANG_DECL_FUNCTION_BODY_ITEM_KIND_STMT,
+	COULANG_DECL_FUNCTION_BODY_ITEM_KIND_DECL
+};
+
+typedef struct {
+	enum CoulangDeclFunctionBodyItemKind kind;
+	union {
+		CoulangExpr *expr;
+		CoulangStmt stmt;
+		CoulangDecl *decl;
+	};
+} CoulangDeclFunctionBodyItem;
+
+CoulangDeclFunctionBodyItem
+init_expr__CoulangDeclFunctionBodyItem(CoulangExpr *expr)
+{
+	return (CoulangDeclFunctionBodyItem){
+		.kind = COULANG_DECL_FUNCTION_BODY_ITEM_KIND_EXPR,
+		.expr = expr,
+	};
+}
+
+CoulangDeclFunctionBodyItem
+init_stmt__CoulangDeclFunctionBodyItem(CoulangStmt stmt)
+{
+	return (CoulangDeclFunctionBodyItem){
+		.kind = COULANG_DECL_FUNCTION_BODY_ITEM_KIND_STMT,
+		.stmt = stmt
+	};
+}
+
+CoulangDeclFunctionBodyItem
+init_decl__CoulangDeclFunctionBodyItem(CoulangDecl *decl)
+{
+	return (CoulangDeclFunctionBodyItem){
+		.kind = COULANG_DECL_FUNCTION_BODY_ITEM_KIND_DECL,
+		.decl = decl
+	};
+}
+
+void
+deinit__CoulangDeclFunctionBodyItem(CoulangDeclFunctionBodyItem *self);
+
+typedef struct CoulangDeclFunctionBody {
+	CoulangDeclFunctionBodyItem *items;
+	size_t len;
+	size_t capacity;
+} CoulangDeclFunctionBody;
+
+#define COULANG_DECL_FUNCTION_BODY_DEFAULT_CAPACITY 8
+
+static inline CoulangDeclFunctionBody
+init__CoulangDeclFunctionBody()
+{
+	return (CoulangDeclFunctionBody){
+		.items = NULL,
+		.len = 0,
+		.capacity = COULANG_DECL_FUNCTION_BODY_DEFAULT_CAPACITY
+	};
+}
+
+void
+add__CoulangDeclFunctionBody(CoulangDeclFunctionBody *self, CoulangDeclFunctionBodyItem item);
+
+void
+deinit__CoulangDeclFunctionBody(const CoulangDeclFunctionBody *const self);
+
+typedef struct {
+	const String *name;
+	CoulangDeclFunctionParam *params;
+	CoulangDeclFunctionBody body;
+} CoulangDeclFunction;
+
+static inline CoulangDeclFunction
+init__CoulangDeclFunction(const String *name, CoulangDeclFunctionParam *params, CoulangDeclFunctionBody body)
+{
+	return (CoulangDeclFunction){
+		.name = name,
+		.params = params,
+		.body = body
+	};
+}
+
+static inline void
+deinit__CoulangDeclFunction(const CoulangDeclFunction *const self)
+{
+	deinit__CoulangDeclFunctionParam(self->params);
+	deinit__CoulangDeclFunctionBody(&self->body);
+}
+
+typedef struct {
+	const String *name;
+	enum CoulangDataType data_type;
+	CoulangExpr *expr;
+} CoulangDeclVariable;
+
+static inline CoulangDeclVariable
+init__CoulangDeclVariable(const String *name, enum CoulangDataType data_type, CoulangExpr *expr)
+{
+	return (CoulangDeclVariable){
+		.name = name,
+		.data_type = data_type,
+		.expr = expr
+	};
+}
+
+static inline void
+deinit__CoulangDeclVariable(const CoulangDeclVariable *const self)
+{
+	deinit__CoulangExpr(self->expr);
+}
+
+enum CoulangDeclKind {
+	COULANG_DECL_KIND_LOAD,
+	COULANG_DECL_KIND_FUNCTION,
+	COULANG_DECL_KIND_VARIABLE
+};
+
+typedef struct CoulangDecl {
+	enum CoulangDeclKind kind;
+	union {
+		CoulangDeclLoad load;
+		CoulangDeclFunction function;
+		CoulangDeclVariable variable;
+	};
+} CoulangDecl;
+
+static inline CoulangDecl
+init_load__CoulangDecl(CoulangDeclLoad load)
+{
+	return (CoulangDecl){
+		.kind = COULANG_DECL_KIND_LOAD,
+		.load = load
+	};
+}
+
+static inline CoulangDecl
+init_function__CoulangDecl(CoulangDeclFunction function)
+{
+	return (CoulangDecl){
+		.kind = COULANG_DECL_KIND_FUNCTION,
+		.function = function
+	};
+}
+
+static inline CoulangDecl
+init_variable__CoulangDecl(CoulangDeclVariable variable)
+{
+	return (CoulangDecl){
+		.kind = COULANG_DECL_KIND_VARIABLE,
+		.variable = variable
+	};
+}
+
+void deinit__CoulangDecl(const CoulangDecl *const self);
 
 #endif // COULANG_AST_H

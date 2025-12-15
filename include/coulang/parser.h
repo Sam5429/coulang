@@ -20,63 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef COULANG_STRING_H
-#define COULANG_STRING_H
+#ifndef COULANG_PARSER_H
+#define COULANG_PARSER_H
 
-#include <stdlib.h>
 
-#define STRING_DEFAULT_CAPACITY 8
 
-typedef struct {
-	char *buffer;
-	size_t len;
-	size_t capacity;
-} String;
-
-static inline String
-init__String()
-{
-	return (String){
-		.buffer = NULL,
-		.len = 0,
-		.capacity = STRING_DEFAULT_CAPACITY 
-	};
-}
-
-void
-add__String(String *self, char c);
-
-static inline void
-deinit__String(const String *const self)
-{
-	free(self->buffer);
-}
-
-#define STRINGS_DEFAULT_CAPACITY 8
-
-typedef struct {
-	String *buffer;
-	size_t len;
-	size_t capacity;
-} Strings;
-
-static inline Strings
-init__Strings()
-{
-	return (Strings){
-		.buffer = NULL,
-		.len = 0,
-		.capacity = STRINGS_DEFAULT_CAPACITY
-	};
-}
-
-void
-add__Strings(Strings *self, String s);
-
-static inline void
-deinit__Strings(const Strings *const self)
-{
-	free(self->buffer);
-}
-
-#endif // COULANG_STRING_H
+#endif // COULANG_PARSER_H

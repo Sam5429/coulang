@@ -6,6 +6,10 @@
           ##__VA_ARGS__);                                                      \
   exit(1);
 
+#define COULANG_UNREACHABLE(message) \
+	fprintf(stderr, "Unreachable(%s:%d): "message"\n", __FILE__, __LINE__); \
+	exit(1);
+
 #define COULANG_INTERPRETER_ERROR(message, ...)                                \
   fprintf(stderr, "Error:" message "\n", ##__VA_ARGS__);                       \
   exit(1);
