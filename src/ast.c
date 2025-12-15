@@ -190,13 +190,13 @@ deinit__CoulangDeclFunctionParam(CoulangDeclFunctionParam *self)
 {
 	CoulangDeclFunctionParam *current = self;
 
-	do {
+	while (current) {
 		CoulangDeclFunctionParam *next = current->next;
 
 		free(current);
 
 		current = next;
-	} while (current);
+	}
 }
 
 void
