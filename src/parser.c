@@ -17,11 +17,11 @@ static CoulangToken *get_current_token__TokensIterator(TokensIterator *self);
 static CoulangToken *get_next_token__TokensIterator(TokensIterator *self);
 
 static CoulangToken *expect_token(enum CoulangTokenKind expected_token,
-                           TokensIterator *ite);
+                                  TokensIterator *ite);
 
 static enum CoulangDataType parse_data_type__Parser(TokensIterator *ite);
 
-static CoulangExpr* parse_list(TokensIterator *ite);
+static CoulangExpr *parse_list(TokensIterator *ite);
 
 static CoulangExpr *parse_primary_expr(TokensIterator *ite);
 
@@ -111,7 +111,7 @@ enum CoulangDataType parse_data_type__Parser(TokensIterator *ite) {
   }
 }
 
-CoulangExpr* parse_list(TokensIterator *ite) {
+CoulangExpr *parse_list(TokensIterator *ite) {
   expect_token(COULANG_TOKEN_KIND_LHOOK, ite);
   CoulangExprList *head = NULL;
   CoulangExprList *tail = NULL;
@@ -125,83 +125,91 @@ CoulangExpr* parse_list(TokensIterator *ite) {
 CoulangExpr *parse_primary_expr(TokensIterator *ite) {
   switch (get_current_token__TokensIterator(ite)->kind) {
   case COULANG_TOKEN_KIND_INTEGER:
-	break;
+    break;
   case COULANG_TOKEN_KIND_FLOAT:
-	break;
+    break;
   case COULANG_TOKEN_KIND_STRING:
-	break;
+    break;
   case COULANG_TOKEN_KIND_KEYWORD_LIST:
     return parse_list(ite);
   case COULANG_TOKEN_KIND_BANG:
   case COULANG_TOKEN_KIND_MINUS:
-	return parse_unary_expr(ite);
+    return parse_unary_expr(ite);
   default:
     COULANG_INTERPRETER_ERROR("unknown expression");
   }
 }
 
-CoulangExpr *parse_unary_expr(TokensIterator *ite)
-{
-}
+CoulangExpr *parse_unary_expr(TokensIterator *ite) {}
 
-CoulangExpr *parse_binary_expr(TokensIterator *ite, CoulangExpr *left)
-{
-}
+CoulangExpr *parse_binary_expr(TokensIterator *ite, CoulangExpr *left) {}
 
 CoulangExpr *parse_expr(TokensIterator *ite) {
-	CoulangExpr *expr = parse_primary_expr(ite);
-	CoulangToken *current = get_current_token__TokensIterator(ite);
+  CoulangExpr *expr = parse_primary_expr(ite);
+  CoulangToken *current = get_current_token__TokensIterator(ite);
 
-	switch (current->kind) {
-		case COULANG_TOKEN_KIND_PLUS:
-		case COULANG_TOKEN_KIND_MINUS:
-		case COULANG_TOKEN_KIND_STAR:
-		case COULANG_TOKEN_KIND_SLASH:
-		case COULANG_TOKEN_KIND_MODULO:
-		case COULANG_TOKEN_KIND_EQ:
-		case COULANG_TOKEN_KIND_EQ_EQ:
-		case COULANG_TOKEN_KIND_BANG_EQ:
-		case COULANG_TOKEN_KIND_LSHIFT:
-		case COULANG_TOKEN_KIND_RSHIFT:
-		case COULANG_TOKEN_KIND_LSHIFT_EQ:
-		case COULANG_TOKEN_KIND_RSHIFT_EQ:
-			expr = parse_binary_expr(ite, expr);
+  switch (current->kind) {
+  case COULANG_TOKEN_KIND_PLUS:
+  case COULANG_TOKEN_KIND_MINUS:
+  case COULANG_TOKEN_KIND_STAR:
+  case COULANG_TOKEN_KIND_SLASH:
+  case COULANG_TOKEN_KIND_MODULO:
+  case COULANG_TOKEN_KIND_EQ:
+  case COULANG_TOKEN_KIND_EQ_EQ:
+  case COULANG_TOKEN_KIND_BANG_EQ:
+  case COULANG_TOKEN_KIND_LSHIFT:
+  case COULANG_TOKEN_KIND_RSHIFT:
+  case COULANG_TOKEN_KIND_LSHIFT_EQ:
+  case COULANG_TOKEN_KIND_RSHIFT_EQ:
+    expr = parse_binary_expr(ite, expr);
 
-			break;
-	}
+    break;
+  }
 
-	return expr;
+  return expr;
 }
 
 CoulangStmt parse_stmt_while(TokensIterator *ite) {
-	consume_token__TokensIterator(ite);
+  consume_token__TokensIterator(ite);
 
-	CoulangExpr *cond = parse_expr(ite);
-	CoulangDeclFunctionBody body = parse_function_body__Parser(ite);
-	CoulangDeclFunctionBody *body_p = COULANG_ALLOC(sizeof(CoulangDeclFunctionBody));
+  CoulangExpr *cond = parse_expr(ite);
+  CoulangDeclFunctionBody body = parse_function_body__Parser(ite);
+  CoulangDeclFunctionBody *body_p =
+      COULANG_ALLOC(sizeof(CoulangDeclFunctionBody));
 
-	*body_p = body;
+  *body_p = body;
 
-	return init_while__CoulangStmt(init__CoulangStmtWhile(cond, body_p));
+  return init_while__CoulangStmt(init__CoulangStmtWhile(cond, body_p));
 }
 
-CoulangStmtIfBranch parse_stmt_if_branch(TokensIterator *ite) {
-	CoulangStmtIfBranch *if_branch = NULL; 
-	// TODO:
+CoulangStmtIfBranch *parse_stmt_if_branch(TokensIterator *ite) {
+  CoulangStmtIfBranch *if_branch = NULL;
+  CoulangToken *current = consume_token__TokensIterator(ite);
+
+  while (current->kind == COULANG_TOKEN_KIND_KEYWORD_IF ||
+         current->kind == COULANG_TOKEN_KIND_KEYWORD_ELSE ||
+         current->kind == COULANG_TOKEN_KIND_KEYWORD_ELIF) {
+    CoulangExpr *cond = parse_expr(ite);
+    CoulangDeclFunctionBody body = parse_function_body__Parser(ite);
+    CoulangStmtIfBranch branch = init__CoulangStmtIfBranch(cond, &body);
+    add__CoulangStmtIfBranch(&branch, &if_branch);
+  }
+
+  return if_branch;
 }
 
 CoulangStmt parse_stmt_if(TokensIterator *ite) {
-	consume_token__TokensIterator(ite);
+  consume_token__TokensIterator(ite);
 
-	parse_stmt_if_branch(ite);
+  parse_stmt_if_branch(ite);
 }
 
 CoulangStmt parse_stmt_return(TokensIterator *ite) {
-	consume_token__TokensIterator(ite);
+  consume_token__TokensIterator(ite);
 
-	CoulangExpr *expr = parse_expr(ite);
+  CoulangExpr *expr = parse_expr(ite);
 
-	return init_return__CoulangStmt(expr);
+  return init_return__CoulangStmt(expr);
 }
 
 CoulangDeclFunctionBody parse_function_body__Parser(TokensIterator *ite) {
@@ -210,23 +218,23 @@ CoulangDeclFunctionBody parse_function_body__Parser(TokensIterator *ite) {
   CoulangToken *current = get_current_token__TokensIterator(ite);
 
   while (current->kind != COULANG_TOKEN_KIND_RBRACE) {
-	CoulangDeclFunctionBodyItem item = {0};
+    CoulangDeclFunctionBodyItem item = {0};
 
     switch (current->kind) {
     case COULANG_STMT_KIND_WHILE:
-		item = init_stmt__CoulangDeclFunctionBodyItem(parse_stmt_while(ite));
-		break;
+      item = init_stmt__CoulangDeclFunctionBodyItem(parse_stmt_while(ite));
+      break;
     case COULANG_STMT_KIND_IF:
-		item = init_stmt__CoulangDeclFunctionBodyItem(parse_stmt_if(ite));
-		break;
+      item = init_stmt__CoulangDeclFunctionBodyItem(parse_stmt_if(ite));
+      break;
     case COULANG_STMT_KIND_RETURN:
-		item = init_stmt__CoulangDeclFunctionBodyItem(parse_stmt_return(ite));
-		break;
-	default:
-		item = init_expr__CoulangDeclFunctionBodyItem(parse_expr(ite));
+      item = init_stmt__CoulangDeclFunctionBodyItem(parse_stmt_return(ite));
+      break;
+    default:
+      item = init_expr__CoulangDeclFunctionBodyItem(parse_expr(ite));
     }
 
-	add__CoulangDeclFunctionBody(&body, item);
+    add__CoulangDeclFunctionBody(&body, item);
   }
 
   return body;
@@ -293,8 +301,8 @@ CoulangDecl *parse_declaration__Parser(TokensIterator *ite) {
   }
 }
 
-void parse_declarations__Parser(TokensIterator *ite, CoulangDeclFunctionBody *body)
-{
-	while (!is_done__CoulangToken(ite)) {
-	}
+void parse_declarations__Parser(TokensIterator *ite,
+                                CoulangDeclFunctionBody *body) {
+  while (!is_done__CoulangToken(ite)) {
+  }
 }
