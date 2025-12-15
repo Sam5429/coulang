@@ -1,4 +1,5 @@
-#include "lexer.h"
+#include <coulang/lexer.h>
+#include <coulang/macros.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -17,18 +18,18 @@ typedef struct file_iterator {
 file_iterator read_file(char *path) {
   FILE *f = fopen(path, "r");
   if (f == NULL) {
-    err("error while opening the file");
+    COULANG_ERROR("error while opening the file");
   }
 
   struct stat s;
   if (stat(path, &s) == -1) {
-    err("error while reading the size of the file");
+    COULANG_ERROR("error while reading the size of the file");
   }
 
-  char *buffer = malloc(s.st_size + 1);
+  char *buffer = COULANG_ALLOC(s.st_size + 1);
 
   if (fread(buffer, 1, s.st_size, f) != s.st_size) {
-    err("error while reading the file");
+    COULANG_ERROR("error while reading the file");
   }
   buffer[s.st_size] = '\0';
 

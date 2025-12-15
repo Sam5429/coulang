@@ -20,13 +20,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "lexer.h"
+#include <coulang/lexer.h>
+#include <coulang/macros.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 int main(int argc, char **argv) {
   if (argc != 2) {
-    printf("donne les bon args fdp\n");
+    COULANG_ERROR("donne les bon args fdp\n");
     exit(1);
   }
   lex(argv[1]);
