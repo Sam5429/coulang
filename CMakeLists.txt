@@ -7,6 +7,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
 add_executable(coulang
+	${CMAKE_SOURCE_DIR}/src/ast.c
 	${CMAKE_SOURCE_DIR}/src/main.c
 	${CMAKE_SOURCE_DIR}/src/lexer.c
 	${CMAKE_SOURCE_DIR}/src/string.c
