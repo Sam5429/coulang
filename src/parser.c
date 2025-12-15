@@ -150,6 +150,9 @@ CoulangExpr *parse_primary_expr(TokensIterator *ite) {
 
   switch (current_token->kind) {
   case COULANG_TOKEN_KIND_INTEGER:
+	// FIXME: Use another thing than atoi, should return uint64_t
+	expr = init_integer__CoulangExpr(atoi(current_token->integer.buffer));
+
     break;
   case COULANG_TOKEN_KIND_FLOAT:
     expr = init_float__CoulangExpr(atof(current_token->float_.buffer));
@@ -357,6 +360,8 @@ CoulangDeclFunctionBody parse_function_body__Parser(TokensIterator *ite) {
     }
 
     add__CoulangDeclFunctionBody(&body, item);
+
+	current = get_current_token__TokensIterator(ite);
   }
 
   expect_token(COULANG_TOKEN_KIND_RBRACE, ite);

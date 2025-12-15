@@ -153,7 +153,7 @@ static inline void add__CoulangStmtIfBranch(CoulangStmtIfBranch *self,
   *tail = self;
 }
 
-static void deinit__CoulangStmtIfBranch(CoulangStmtIfBranch *self);
+void deinit__CoulangStmtIfBranch(CoulangStmtIfBranch *self);
 
 typedef struct {
   CoulangStmtIfBranch *ifs;
