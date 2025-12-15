@@ -86,6 +86,12 @@ init_grouping__CoulangExpr(CoulangExpr *grouping)
 	INIT_EXPR(COULANG_EXPR_KIND_GROUPING, .grouping = grouping);
 }
 
+CoulangExpr *
+init_identifier__CoulangExpr(const String *identifier)
+{
+	INIT_EXPR(COULANG_EXPR_KIND_IDENTIFIER, .identifier = identifier);
+}
+
 #undef INIT_EXPR
 
 void deinit__CoulangExpr(CoulangExpr *self)

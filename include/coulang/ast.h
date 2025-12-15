@@ -69,25 +69,27 @@ static inline CoulangExprList init__CoulangExprList(struct CoulangExpr *head) {
 void deinit__CoulangExprList(const CoulangExprList *const self);
 
 enum CoulangExprKind {
-  COULANG_EXPR_KIND_BINARY,
-  COULANG_EXPR_KIND_STRING,
-  COULANG_EXPR_KIND_INTEGER,
-  COULANG_EXPR_KIND_FLOAT,
-  COULANG_EXPR_KIND_LIST,
-  COULANG_EXPR_KIND_GROUPING
+	COULANG_EXPR_KIND_BINARY,
+	COULANG_EXPR_KIND_STRING,
+	COULANG_EXPR_KIND_INTEGER,
+	COULANG_EXPR_KIND_FLOAT,
+	COULANG_EXPR_KIND_LIST,
+	COULANG_EXPR_KIND_GROUPING,
+	COULANG_EXPR_KIND_IDENTIFIER
 };
 
 typedef struct CoulangExpr {
-  enum CoulangExprKind kind;
-  struct CoulangExpr *next;
-  union {
-    CoulangExprBinary binary;
-    const String *string;
-    uint64_t integer;
-    double float_;
-    CoulangExprList list;
-    CoulangExpr *grouping;
-  };
+	enum CoulangExprKind kind;
+	struct CoulangExpr *next;
+	union {
+		CoulangExprBinary binary;
+		const String *string;
+		uint64_t integer;
+		double float_;
+		CoulangExprList list;
+		CoulangExpr *grouping;
+		const String *identifier;
+	};
 } CoulangExpr;
 
 CoulangExpr *init_binary__CoulangExpr(CoulangExprBinary binary);
@@ -101,6 +103,23 @@ CoulangExpr *init_float__CoulangExpr(double float_);
 CoulangExpr *init_list__CoulangExpr(CoulangExprList list);
 
 CoulangExpr *init_grouping__CoulangExpr(CoulangExpr *grouping);
+
+CoulangExpr *
+init_identifier__CoulangExpr(const String *identifier);
+
+static inline void
+add__CoulangExpr(CoulangExpr *self, CoulangExpr **head, CoulangExpr **tail)
+{
+	if (!*head) {
+		*head = self;
+	}
+
+	if (*tail) {
+		(*tail)->next = self;
+	}
+
+	*tail = self;
+}
 
 void deinit__CoulangExpr(CoulangExpr *self);
 
