@@ -151,6 +151,8 @@ CoulangExpr *parse_primary_expr(TokensIterator *ite) {
     COULANG_INTERPRETER_ERROR("unknown expression");
   }
 
+  consume_token__TokensIterator(ite);
+
   return expr;
 }
 
@@ -186,6 +188,7 @@ CoulangExpr *parse_binary_expr(TokensIterator *ite, CoulangExpr *left)
 	};
 
 	CoulangToken *token = get_current_token__TokensIterator(ite);
+	int last_precedence = 0;
 
 	while (token->kind == COULANG_TOKEN_KIND_STAR ||
 		   token->kind == COULANG_TOKEN_KIND_SLASH ||
@@ -202,9 +205,18 @@ CoulangExpr *parse_binary_expr(TokensIterator *ite, CoulangExpr *left)
 		enum CoulangExprBinaryKind binary_kind = tokens_to_binary_kind[token->kind];
 
 		consume_token__TokensIterator(ite);
+
+		CoulangExpr *right = parse_primary_expr(ite);
+
+		last_precedence = precedence;
+		left = init_binary__CoulangExpr(init__CoulangExprBinary(binary_kind, left, right));
+
 		// 3 + 3 * 3
 		// 3 * 3 + 3
 		// ADD(3, MUL(3, 3))
+		if (left->kind == COULANG_EXPR_KIND_BINARY && last_precedence < precedence) {
+			// TODO:
+		}
 	}
 }
 
