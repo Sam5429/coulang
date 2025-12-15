@@ -264,8 +264,12 @@ CoulangDeclFunctionParam *
 init__CoulangDeclFunctionParam(const String *name, enum CoulangDataType data_type);
 
 static inline void
-add__CoulangDeclFunctionParam(CoulangDeclFunctionParam *self, CoulangDeclFunctionParam **tail)
+add__CoulangDeclFunctionParam(CoulangDeclFunctionParam *self, CoulangDeclFunctionParam **head, CoulangDeclFunctionParam **tail)
 {
+	if (!*head) {
+		*head = self;
+	}
+
 	if (*tail) {
 		(*tail)->next = self;
 	}

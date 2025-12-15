@@ -155,6 +155,9 @@ enum CoulangTokenKind get_keyword(String s) {
   if (strcmp(s.buffer, "while") == 0) {
     return COULANG_TOKEN_KIND_KEYWORD_WHILE;
   }
+  if (strcmp(s.buffer, "ptr") == 0) {
+    return COULANG_TOKEN_KIND_KEYWORD_PTR;
+  }
   return COULANG_TOKEN_KIND_IDENTIFIER;
 }
 
@@ -220,6 +223,7 @@ CoulangTokens lex(char *path) {
         break;
       }
       token = init__CoulangToken(COULANG_TOKEN_KIND_LSHIFT);
+	  break;
     case '>':
       if (get_next_char__FileIterator(&file) == '=') {
         consume_char__FileIterator(&file);
@@ -227,6 +231,10 @@ CoulangTokens lex(char *path) {
         break;
       }
       token = init__CoulangToken(COULANG_TOKEN_KIND_RSHIFT);
+	  break;
+	case ',':
+	  token = init__CoulangToken(COULANG_TOKEN_KIND_COMMA);
+	  break;
     case '\n':
       continue;
     case '"':
