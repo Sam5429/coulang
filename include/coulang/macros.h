@@ -2,7 +2,7 @@
 #define COULANG_MACROS_H
 
 #define COULANG_ERROR(message) \
-	fprintf(stderr, "Error(%s:%d): "message, __FILE__, __LINE__); \
+	fprintf(stderr, "Error(%s:%d): "message"\n", __FILE__, __LINE__); \
 	exit(1);
 
 #define COULANG_F_ALLOC(f, ...) ({ \
