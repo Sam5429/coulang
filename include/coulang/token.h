@@ -25,6 +25,8 @@
 
 #include <coulang/string.h>
 
+#include <stdlib.h>
+
 enum CoulangTokenKind {
 	COULANG_TOKEN_KIND_PLUS,
 	COULANG_TOKEN_KIND_MINUS,
@@ -113,5 +115,31 @@ init_float__CoulangToken(String float_)
 
 void
 deinit__CoulangToken(const CoulangToken *const self);
+
+#define COULANG_TOKENS_DEFAULT_CAPACITY 8
+
+typedef struct {
+	CoulangToken *buffer;
+	size_t len;
+	size_t capacity;
+} CoulangTokens;
+
+static inline CoulangTokens init__CoulangTokens()
+{
+	return (CoulangTokens){
+		.buffer = NULL,
+		.len = 0,
+		.capacity = COULANG_TOKENS_DEFAULT_CAPACITY
+	};
+}
+
+void
+add__CoulangTokens(CoulangTokens *self, CoulangToken token);
+
+void
+deinit__CoulangTokens(const CoulangTokens *const self)
+{
+	free(self->buffer);
+}
 
 #endif // COULANG_TOKEN_H

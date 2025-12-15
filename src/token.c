@@ -20,7 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <coulang/macros.h>
 #include <coulang/token.h>
+
+#include <stdio.h>
 
 void
 deinit__CoulangToken(const CoulangToken *const self)
@@ -45,4 +48,17 @@ deinit__CoulangToken(const CoulangToken *const self)
 		default:
 			break;
 	}
+}
+
+void
+add__CoulangTokens(CoulangTokens *self, CoulangToken token)
+{
+	if (!self->buffer) {
+		self->buffer = COULANG_ALLOC(self->capacity * sizeof(CoulangToken));
+	} else if (self->len == self->capacity) {
+		self->capacity *= 2;
+		self->buffer = COULANG_REALLOC(self->buffer, self->capacity * sizeof(CoulangToken));
+	}
+
+	self->buffer[self->len++] = token;
 }

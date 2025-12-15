@@ -25,7 +25,7 @@
 
 #include <stdlib.h>
 
-#define DEFAULT_STRING_CAPACITY 8
+#define DEFAULT_STRING_DEFAULT_CAPACITY 8
 
 typedef struct {
 	char *buffer;
@@ -39,7 +39,7 @@ init__String()
 	return (String){
 		.buffer = NULL,
 		.len = 0,
-		.capacity = DEFAULT_STRING_CAPACITY
+		.capacity = DEFAULT_STRING_DEFAULT_CAPACITY
 	};
 }
 
