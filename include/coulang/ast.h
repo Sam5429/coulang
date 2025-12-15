@@ -291,7 +291,7 @@ typedef struct {
 	};
 } CoulangDeclFunctionBodyItem;
 
-CoulangDeclFunctionBodyItem
+static inline CoulangDeclFunctionBodyItem
 init_expr__CoulangDeclFunctionBodyItem(CoulangExpr *expr)
 {
 	return (CoulangDeclFunctionBodyItem){
@@ -300,7 +300,7 @@ init_expr__CoulangDeclFunctionBodyItem(CoulangExpr *expr)
 	};
 }
 
-CoulangDeclFunctionBodyItem
+static inline CoulangDeclFunctionBodyItem
 init_stmt__CoulangDeclFunctionBodyItem(CoulangStmt stmt)
 {
 	return (CoulangDeclFunctionBodyItem){
@@ -309,7 +309,7 @@ init_stmt__CoulangDeclFunctionBodyItem(CoulangStmt stmt)
 	};
 }
 
-CoulangDeclFunctionBodyItem
+static inline CoulangDeclFunctionBodyItem
 init_decl__CoulangDeclFunctionBodyItem(CoulangDecl *decl)
 {
 	return (CoulangDeclFunctionBodyItem){
