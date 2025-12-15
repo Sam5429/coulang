@@ -92,7 +92,7 @@ static inline CoulangToken init_float__CoulangToken(String float_) {
   return (CoulangToken){.kind = COULANG_TOKEN_KIND_FLOAT, .float_ = float_};
 }
 
-void deinit__CoulangToken(const CoulangToken *const self);
+extern void deinit__CoulangToken(const CoulangToken *const self);
 
 #define COULANG_TOKENS_DEFAULT_CAPACITY 8
 
@@ -107,10 +107,8 @@ static inline CoulangTokens init__CoulangTokens() {
       .buffer = NULL, .len = 0, .capacity = COULANG_TOKENS_DEFAULT_CAPACITY};
 }
 
-void add__CoulangTokens(CoulangTokens *self, CoulangToken token);
+extern void add__CoulangTokens(CoulangTokens *self, CoulangToken token);
 
-static inline void deinit__CoulangTokens(const CoulangTokens *const self) {
-  free(self->buffer);
-}
+extern void deinit__CoulangTokens(const CoulangTokens *const self);
 
 #endif // COULANG_TOKEN_H

@@ -1,3 +1,4 @@
+#include "coulang/token.h"
 #include <stddef.h>
 
-extern void lex(char *path);
+extern CoulangTokens lex(char *path);

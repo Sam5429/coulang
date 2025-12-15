@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "coulang/token.h"
 #include <coulang/lexer.h>
 #include <coulang/macros.h>
 #include <stdio.h>
@@ -30,6 +31,7 @@ int main(int argc, char **argv) {
     COULANG_ERROR("donne les bon args fdp\n");
     exit(1);
   }
-  lex(argv[1]);
+  CoulangTokens tokens = lex(argv[1]);
+  deinit__CoulangTokens(&tokens);
   return 0;
 }

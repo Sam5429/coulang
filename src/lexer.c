@@ -154,7 +154,7 @@ enum CoulangTokenKind get_keyword(String s) {
   return COULANG_TOKEN_KIND_IDENTIFIER;
 }
 
-void lex(char *path) {
+CoulangTokens lex(char *path) {
   FileIterator file = read_file__FileIterator(path);
   CoulangToken token = {0};
   CoulangTokens tokens = init__CoulangTokens();
@@ -234,6 +234,7 @@ void lex(char *path) {
       if (token_kind == COULANG_TOKEN_KIND_IDENTIFIER) {
         token = init_identifier__CoulangToken(s);
       } else {
+        deinit__String(&s);
         token = init__CoulangToken(token_kind);
       }
       break;
@@ -286,4 +287,5 @@ void lex(char *path) {
   }
 
   deinit__FileIterator(&file);
+  return tokens;
 }
