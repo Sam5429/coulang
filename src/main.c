@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "coulang/parser.h"
 #include "coulang/token.h"
 #include <coulang/lexer.h>
 #include <coulang/macros.h>
@@ -32,6 +33,9 @@ int main(int argc, char **argv) {
     exit(1);
   }
   CoulangTokens tokens = lex(argv[1]);
+  TokensIterator ite = init__TokensIterator(&tokens);
+  parse_declaration__Parser(&ite);
   deinit__CoulangTokens(&tokens);
+
   return 0;
 }
