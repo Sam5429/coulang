@@ -301,32 +301,40 @@ CoulangStmt parse_stmt_while(TokensIterator *ite) {
 }
 
 CoulangStmtIfBranch *parse_stmt_if_branch(TokensIterator *ite) {
-  CoulangStmtIfBranch *if_branch = NULL;
-  CoulangToken *current = consume_token__TokensIterator(ite);
+  CoulangStmtIfBranch *head = NULL;
+  CoulangStmtIfBranch *tail = NULL;
+  CoulangToken *current = get_current_token__TokensIterator(ite);
 
   while (current->kind == COULANG_TOKEN_KIND_KEYWORD_IF ||
          current->kind == COULANG_TOKEN_KIND_KEYWORD_ELIF) {
+	consume_token__TokensIterator(ite);
+
     CoulangExpr *cond = parse_expr(ite);
-    CoulangDeclFunctionBody body = parse_function_body__Parser(ite);
-    CoulangStmtIfBranch branch = init__CoulangStmtIfBranch(cond, &body);
-    add__CoulangStmtIfBranch(&branch, &if_branch);
+	CoulangDeclFunctionBody *body_p = COULANG_ALLOC(sizeof(CoulangDeclFunctionBody));
+	*body_p = parse_function_body__Parser(ite);
+    CoulangStmtIfBranch *branch_p = COULANG_ALLOC(sizeof(CoulangStmtIfBranch));
+	*branch_p = init__CoulangStmtIfBranch(cond, body_p);
+
+    add__CoulangStmtIfBranch(branch_p, &head, &tail);
+
+	current = get_current_token__TokensIterator(ite);
   }
 
-  return if_branch;
+  return head;
 }
 
 CoulangStmt parse_stmt_if(TokensIterator *ite) {
-  consume_token__TokensIterator(ite);
+  CoulangStmtIfBranch *ifs = parse_stmt_if_branch(ite);
+  CoulangDeclFunctionBody *else_p = NULL;
 
-  CoulangStmtIfBranch *branch = parse_stmt_if_branch(ite);
-  CoulangDeclFunctionBody else_;
   if (get_current_token__TokensIterator(ite)->kind ==
       COULANG_TOKEN_KIND_KEYWORD_ELSE) {
     consume_token__TokensIterator(ite);
-    else_ = parse_function_body__Parser(ite);
+	else_p = COULANG_ALLOC(sizeof(CoulangDeclFunctionBody));
+    *else_p = parse_function_body__Parser(ite);
   }
 
-  return init_if__CoulangStmt((CoulangStmtIf){.ifs = branch, .else_ = &else_});
+  return init_if__CoulangStmt(init__CoulangStmtIf(ifs, else_p));
 }
 
 CoulangStmt parse_stmt_return(TokensIterator *ite) {
@@ -339,6 +347,7 @@ CoulangStmt parse_stmt_return(TokensIterator *ite) {
 
 CoulangDeclFunctionBody parse_function_body__Parser(TokensIterator *ite) {
   expect_token(COULANG_TOKEN_KIND_LBRACE, ite);
+
   CoulangDeclFunctionBody body = init__CoulangDeclFunctionBody();
   CoulangToken *current = get_current_token__TokensIterator(ite);
 
@@ -346,13 +355,13 @@ CoulangDeclFunctionBody parse_function_body__Parser(TokensIterator *ite) {
     CoulangDeclFunctionBodyItem item = {0};
 
     switch (current->kind) {
-    case COULANG_STMT_KIND_WHILE:
+    case COULANG_TOKEN_KIND_KEYWORD_WHILE:
       item = init_stmt__CoulangDeclFunctionBodyItem(parse_stmt_while(ite));
       break;
-    case COULANG_STMT_KIND_IF:
+	case COULANG_TOKEN_KIND_KEYWORD_IF:
       item = init_stmt__CoulangDeclFunctionBodyItem(parse_stmt_if(ite));
       break;
-    case COULANG_STMT_KIND_RETURN:
+	case COULANG_TOKEN_KIND_KEYWORD_RETURN:
       item = init_stmt__CoulangDeclFunctionBodyItem(parse_stmt_return(ite));
       break;
     default:

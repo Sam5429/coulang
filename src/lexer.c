@@ -161,6 +161,9 @@ enum CoulangTokenKind get_keyword(String s) {
   if (strcmp(s.buffer, "ptr") == 0) {
     return COULANG_TOKEN_KIND_KEYWORD_PTR;
   }
+  if (strcmp(s.buffer, "return") == 0) {
+    return COULANG_TOKEN_KIND_KEYWORD_RETURN;
+  }
   return COULANG_TOKEN_KIND_IDENTIFIER;
 }
 

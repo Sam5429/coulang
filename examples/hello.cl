@@ -1,3 +1,6 @@
 fn add(x int, y int) int {
-	return x + y
+	if 1 {
+	}
+
+	return x < 10
 }

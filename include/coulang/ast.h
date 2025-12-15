@@ -145,7 +145,12 @@ init__CoulangStmtIfBranch(CoulangExpr *cond, CoulangDeclFunctionBody *body) {
 }
 
 static inline void add__CoulangStmtIfBranch(CoulangStmtIfBranch *self,
+											CoulangStmtIfBranch **head,
                                             CoulangStmtIfBranch **tail) {
+  if (!*head) {
+	*head = self;
+  }
+
   if (*tail) {
     (*tail)->next = self;
   }

@@ -136,8 +136,11 @@ deinit__CoulangStmtIfBranch(CoulangStmtIfBranch *self)
 void deinit__CoulangStmtIf(const CoulangStmtIf *const self)
 {
 	deinit__CoulangStmtIfBranch(self->ifs);
-	deinit__CoulangDeclFunctionBody(self->else_);
-	free(self->else_);
+
+	if (self->else_) {
+		deinit__CoulangDeclFunctionBody(self->else_);
+		free(self->else_);
+	}
 }
 
 void deinit__CoulangStmtWhile(const CoulangStmtWhile *const self)
@@ -210,6 +213,7 @@ deinit__CoulangDeclFunctionBodyItem(CoulangDeclFunctionBodyItem *self)
 			break;
 		case COULANG_DECL_FUNCTION_BODY_ITEM_KIND_DECL:
 			deinit__CoulangDecl(self->decl);
+			free(self->decl);
 
 			break;
 		default:
