@@ -13,13 +13,19 @@ void err(char *error) {
   exit(-1);
 }
 
-typedef struct FileIterator {
+typedef struct {
+  size_t line;
+  size_t colomne;
+} Position;
+
+typedef struct {
   char *content;
-  size_t current_pos;
+  size_t content_pos;
   size_t size;
+  Position code_pos;
 } FileIterator;
 
-FileIterator read_file(char *path) {
+FileIterator read_file__FileIterator(char *path) {
   FILE *f = fopen(path, "r");
   if (f == NULL) {
     COULANG_ERROR("error while opening the file");
@@ -41,13 +47,13 @@ FileIterator read_file(char *path) {
 
   return (FileIterator){
       .content = buffer,
-      .current_pos = 0,
+      .content_pos = 0,
       .size = s.st_size,
   };
 }
 
-int is_done(FileIterator *file) {
-  if (file->current_pos < file->size) {
+int is_done__FileIterator(FileIterator *file) {
+  if (file->content_pos < file->size) {
     return 0;
   }
 
@@ -58,24 +64,41 @@ int is_done(FileIterator *file) {
  * return -1 if the file is done
  */
 char consume_char__FileIterator(FileIterator *self) {
-  if (!is_done(self)) {
-    return self->content[self->current_pos++];
+  if (!is_done__FileIterator(self)) {
+    char c = self->content[self->content_pos++];
+    self->code_pos.colomne++;
+    if (c == '\n') {
+      self->code_pos.line += 1;
+      self->code_pos.colomne = 0;
+    }
+    return c;
   }
   return -1;
+}
+
+void restore_char__FileIteratro(FileIterator *self) {
+  if (self->content_pos > 0) {
+    self->content_pos--;
+    self->code_pos.colomne--;
+  }
 }
 
 // return -1 if there is no next char
 char get_next_char__FileIterator(FileIterator *self) {
-  if (self->current_pos < self->size - 2) {
-    return self->content[self->current_pos + 1];
+  if (self->content_pos < self->size - 2) {
+    return self->content[self->content_pos + 1];
   }
   return -1;
 }
 
+char get_current_char__FileIterator(FileIterator *self) {
+  return self->content[self->content_pos];
+}
+
 // return -1 if there is not privious char
 char get_privious_char__FileIterator(FileIterator *self) {
-  if (self->current_pos > 0) {
-    return self->content[self->current_pos - 1];
+  if (self->content_pos > 0) {
+    return self->content[self->content_pos - 1];
   }
   return -1;
 }
@@ -87,13 +110,22 @@ String get_next_identifier__FileIterator(FileIterator *self) {
     add__String(&s, current_char);
     current_char = consume_char__FileIterator(self);
   }
-  self->current_pos--;
+  restore_char__FileIteratro(self);
   return s;
+}
+
+void skip_space__FileIterator(FileIterator *self) {
+  char current_char = consume_char__FileIterator(self);
+  while (isspace(current_char)) {
+    current_char = consume_char__FileIterator(self);
+  }
+  restore_char__FileIteratro(self);
 }
 
 void deinit__FileIterator(FileIterator *file) { free(file->content); }
 
-// get the keyword associated with the string and return a id if it's not an id
+// get the keyword associated with the string and return a id if it's not an
+// id
 enum CoulangTokenKind get_keyword(String s) {
   if (strcmp(s.buffer, "if") == 0) {
     return COULANG_TOKEN_KIND_KEYWORD_IF;
@@ -123,12 +155,16 @@ enum CoulangTokenKind get_keyword(String s) {
 }
 
 void lex(char *path) {
-  FileIterator file = read_file(path);
+  FileIterator file = read_file__FileIterator(path);
   CoulangToken token = {0};
   CoulangTokens tokens = init__CoulangTokens();
 
-  while (!is_done(&file)) {
+  while (!is_done__FileIterator(&file)) {
+    skip_space__FileIterator(&file);
     char current_char = consume_char__FileIterator(&file);
+    if (is_done__FileIterator(&file)) {
+      break;
+    }
     switch (current_char) {
     case '+':
       token = init__CoulangToken(COULANG_TOKEN_KIND_PLUS);
@@ -157,12 +193,15 @@ void lex(char *path) {
     case ')':
       token = init__CoulangToken(COULANG_TOKEN_KIND_RPAREN);
       break;
+    case '\n':
+      continue;
     case '"':
       String s = init__String();
       current_char = consume_char__FileIterator(&file);
       while (current_char != '"') {
         add__String(&s, current_char);
         current_char = consume_char__FileIterator(&file);
+        // printf("%s\n", s.buffer);
       }
       token = init_string__CoulangToken(s);
       break;
@@ -181,7 +220,7 @@ void lex(char *path) {
         add__String(&s, current_char);
         current_char = consume_char__FileIterator(&file);
       }
-      file.current_pos--;
+      restore_char__FileIteratro(&file);
       if (is_float) {
         token = init_float__CoulangToken(s);
       } else {
@@ -215,8 +254,11 @@ void lex(char *path) {
         current_char = consume_char__FileIterator(&file);
       }
       break;
+    case '\0':
+      break;
     default:
-      continue;
+      COULANG_INTERPRETER_ERROR("WTF HAVE YOU DONE HERE: %zu, %zu",
+                                file.code_pos.line, file.code_pos.colomne);
     }
 
     add__CoulangTokens(&tokens, token);
