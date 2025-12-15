@@ -315,6 +315,8 @@ CoulangTokens lex(const char *path) {
     add__CoulangTokens(&tokens, token);
   }
 
+  add__CoulangTokens(&tokens, init__CoulangToken(COULANG_TOKEN_KIND_EOF));
+
   for (size_t i = 0; i < tokens.len; ++i) {
     CoulangToken current = tokens.buffer[i];
 
