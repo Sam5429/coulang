@@ -21,13 +21,7 @@ static bool is_done__CoulangToken(TokensIterator *self);
 
 static CoulangToken *consume_token__TokensIterator(TokensIterator *self);
 
-static void restor_token__TokensIterator(TokensIterator *self);
-
-static CoulangToken *get_privious_token__TokensIterator(TokensIterator *self);
-
 static CoulangToken *get_current_token__TokensIterator(TokensIterator *self);
-
-static CoulangToken *get_next_token__TokensIterator(TokensIterator *self);
 
 static CoulangToken *expect_token(enum CoulangTokenKind expected_token,
                                   TokensIterator *ite);
@@ -86,22 +80,8 @@ CoulangToken *consume_token__TokensIterator(TokensIterator *self) {
   return &self->tokens->buffer[self->tokens->len - 1];
 }
 
-void restor_token__TokensIterator(TokensIterator *self) {
-  if (self->content_pos > 0) {
-    self->content_pos--;
-  }
-}
-
-CoulangToken *get_privious_token__TokensIterator(TokensIterator *self) {
-  return &self->tokens->buffer[self->content_pos - 1];
-}
-
 CoulangToken *get_current_token__TokensIterator(TokensIterator *self) {
   return &self->tokens->buffer[self->content_pos];
-}
-
-CoulangToken *get_next_token__TokensIterator(TokensIterator *self) {
-  return &self->tokens->buffer[self->content_pos + 1];
 }
 
 CoulangToken *expect_token(enum CoulangTokenKind expected_token,
@@ -310,6 +290,8 @@ CoulangExpr *parse_expr(TokensIterator *ite) {
     expr = parse_binary_expr(ite, expr);
 
     break;
+  default:
+	break;
   }
 
   return expr;
