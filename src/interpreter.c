@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2025 moi_c_sam
+// Copyright (c) 2025 moi_c_sam, ArthurPV
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <coulang/parser.h>
-#include <coulang/token.h>
-#include <coulang/lexer.h>
 #include <coulang/interpreter.h>
-#include <coulang/macros.h>
-#include <stdio.h>
-#include <stdlib.h>
 
-int main(int argc, char **argv) {
-  if (argc != 2) {
-    COULANG_ERROR("donne les bon args fdp\n");
-    exit(1);
-  }
-
-  const char *path = argv[1];
-  CoulangTokens tokens = lex(path);
-  TokensIterator ite = init__TokensIterator(&tokens);
-  CoulangDeclFunctionBody body = init__CoulangDeclFunctionBody();
-
-  parse_declarations__Parser(&ite, &body);
-  run__CoulangInterpreter(&body);
-  deinit__CoulangDeclFunctionBody(&body);
-  deinit__CoulangTokens(&tokens);
-
-  return 0;
+void
+run__CoulangInterpreter(const CoulangDeclFunctionBody *body)
+{
 }

@@ -12,6 +12,7 @@ add_executable(coulang
 	${CMAKE_SOURCE_DIR}/src/ast.c
 	${CMAKE_SOURCE_DIR}/src/main.c
 	${CMAKE_SOURCE_DIR}/src/lexer.c
+	${CMAKE_SOURCE_DIR}/src/interpreter.c
 	${CMAKE_SOURCE_DIR}/src/map.c
 	${CMAKE_SOURCE_DIR}/src/parser.c
 	${CMAKE_SOURCE_DIR}/src/scope.c

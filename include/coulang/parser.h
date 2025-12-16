@@ -23,8 +23,8 @@
 #ifndef COULANG_PARSER_H
 #define COULANG_PARSER_H
 
-#include "coulang/ast.h"
-#include "coulang/token.h"
+#include <coulang/ast.h>
+#include <coulang/token.h>
 
 typedef struct {
   const CoulangTokens *const tokens;
