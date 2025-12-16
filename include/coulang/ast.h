@@ -120,7 +120,7 @@ typedef struct CoulangExpr {
     CoulangExprBinary binary;
     CoulangExprUnary unary;
     const String *string;
-    uint64_t integer;
+    int64_t integer;
     double float_;
     CoulangExprList list;
     CoulangExpr *grouping;
@@ -135,7 +135,7 @@ CoulangExpr *init_unary__CoulangExpr(CoulangExprUnary unary);
 
 CoulangExpr *init_string__CoulangExpr(const String *string);
 
-CoulangExpr *init_integer__CoulangExpr(uint64_t integer);
+CoulangExpr *init_integer__CoulangExpr(int64_t integer);
 
 CoulangExpr *init_float__CoulangExpr(double float_);
 

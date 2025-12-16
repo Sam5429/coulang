@@ -16,6 +16,7 @@ add_executable(coulang
 	${CMAKE_SOURCE_DIR}/src/parser.c
 	${CMAKE_SOURCE_DIR}/src/scope.c
 	${CMAKE_SOURCE_DIR}/src/string.c
-	${CMAKE_SOURCE_DIR}/src/token.c)
+	${CMAKE_SOURCE_DIR}/src/token.c
+	${CMAKE_SOURCE_DIR}/src/value.c)
 
 target_include_directories(coulang PRIVATE ${CMAKE_SOURCE_DIR}/include)

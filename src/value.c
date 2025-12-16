@@ -20,18 +20,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef COULANG_SCOPE_H
-#define COULANG_SCOPE_H
+#include <coulang/value.h>
 
-#include <coulang/ast.h>
-#include <coulang/map.h>
+void
+deinit__CoulangValue(const CoulangValue *const self)
+{
+	switch (self->kind) {
+		case COULANG_VALUE_KIND_LIST:
+			deinit__CoulangValueList(&self->list);
 
-typedef struct {
-} Coulang;
-
-typedef struct {
-	Map functions;
-	Map variables;
-} CoulangScope;
-
-#endif // COULANG_SCOPE_H
+			break;
+		default:
+			break;
+	}
+}

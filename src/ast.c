@@ -75,7 +75,7 @@ CoulangExpr *init_string__CoulangExpr(const String *string) {
   INIT_EXPR(COULANG_EXPR_KIND_STRING, .string = string);
 }
 
-CoulangExpr *init_integer__CoulangExpr(uint64_t integer) {
+CoulangExpr *init_integer__CoulangExpr(int64_t integer) {
   INIT_EXPR(COULANG_EXPR_KIND_INTEGER, .integer = integer);
 }
 
