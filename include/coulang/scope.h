@@ -60,6 +60,18 @@ add_variable__CoulangScope(CoulangScope *self, CoulangVariable *variable)
 	}
 }
 
+static inline CoulangDeclFunction *
+get_function__CoulangScope(CoulangScope *self, const String *name)
+{
+	return get__Map(&self->functions, name);
+}
+
+static inline CoulangVariable *
+get_variable__CoulangScope(CoulangScope *self, const String *name)
+{
+	return get__Map(&self->variables, name);
+}
+
 void
 deinit__CoulangScope(CoulangScope *self);
 
