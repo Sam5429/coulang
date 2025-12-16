@@ -15,11 +15,6 @@ void err(char *error) {
 }
 
 typedef struct {
-  size_t line;
-  size_t colomne;
-} Position;
-
-typedef struct {
   char *content;
   size_t content_pos;
   size_t size;
@@ -46,11 +41,13 @@ FileIterator read_file__FileIterator(const char *path) {
 
   fclose(f);
 
-  return (FileIterator){
-      .content = buffer,
-      .content_pos = 0,
-      .size = s.st_size,
-  };
+  return (FileIterator){.content = buffer,
+                        .content_pos = 0,
+                        .size = s.st_size,
+                        .code_pos = (Position){
+                            .colomne = 1,
+                            .line = 1,
+                        }};
 }
 
 int is_done__FileIterator(FileIterator *file) {
@@ -70,7 +67,7 @@ char consume_char__FileIterator(FileIterator *self) {
     self->code_pos.colomne++;
     if (c == '\n') {
       self->code_pos.line += 1;
-      self->code_pos.colomne = 0;
+      self->code_pos.colomne = 1;
     }
     return c;
   }
@@ -78,7 +75,7 @@ char consume_char__FileIterator(FileIterator *self) {
 }
 
 void restore_char__FileIteratro(FileIterator *self) {
-  if (self->content_pos > 0) {
+  if (self->content_pos > 0 && self->content[self->content_pos - 1] != '\n') {
     self->content_pos--;
     self->code_pos.colomne--;
   }
@@ -183,77 +180,82 @@ CoulangTokens lex(const char *path) {
     }
     switch (current_char) {
     case '+':
-      token = init__CoulangToken(COULANG_TOKEN_KIND_PLUS);
+      token = init__CoulangToken(COULANG_TOKEN_KIND_PLUS, file.code_pos);
       break;
     case '-':
-      token = init__CoulangToken(COULANG_TOKEN_KIND_MINUS);
+      token = init__CoulangToken(COULANG_TOKEN_KIND_MINUS, file.code_pos);
       break;
     case '/':
-      token = init__CoulangToken(COULANG_TOKEN_KIND_SLASH);
+      token = init__CoulangToken(COULANG_TOKEN_KIND_SLASH, file.code_pos);
       break;
     case '*':
-      token = init__CoulangToken(COULANG_TOKEN_KIND_STAR);
+      token = init__CoulangToken(COULANG_TOKEN_KIND_STAR, file.code_pos);
       break;
     case '%':
-      token = init__CoulangToken(COULANG_TOKEN_KIND_MODULO);
+      token = init__CoulangToken(COULANG_TOKEN_KIND_MODULO, file.code_pos);
       break;
     case '{':
-      token = init__CoulangToken(COULANG_TOKEN_KIND_LBRACE);
+      token = init__CoulangToken(COULANG_TOKEN_KIND_LBRACE, file.code_pos);
       break;
     case '}':
-      token = init__CoulangToken(COULANG_TOKEN_KIND_RBRACE);
+      token = init__CoulangToken(COULANG_TOKEN_KIND_RBRACE, file.code_pos);
       break;
     case '(':
-      token = init__CoulangToken(COULANG_TOKEN_KIND_LPAREN);
+      token = init__CoulangToken(COULANG_TOKEN_KIND_LPAREN, file.code_pos);
       break;
     case ')':
-      token = init__CoulangToken(COULANG_TOKEN_KIND_RPAREN);
+      token = init__CoulangToken(COULANG_TOKEN_KIND_RPAREN, file.code_pos);
       break;
-	case '[':
-      token = init__CoulangToken(COULANG_TOKEN_KIND_LHOOK);
-	  break;
-	case ']':
-      token = init__CoulangToken(COULANG_TOKEN_KIND_RHOOK);
-	  break;
+    case '[':
+      token = init__CoulangToken(COULANG_TOKEN_KIND_LHOOK, file.code_pos);
+      break;
+    case ']':
+      token = init__CoulangToken(COULANG_TOKEN_KIND_RHOOK, file.code_pos);
+      break;
     case '=':
       if (get_next_char__FileIterator(&file) == '=') {
+        Position temp = file.code_pos;
         consume_char__FileIterator(&file);
-        token = init__CoulangToken(COULANG_TOKEN_KIND_EQ_EQ);
+        token = init__CoulangToken(COULANG_TOKEN_KIND_EQ_EQ, temp);
         break;
       }
-      token = init__CoulangToken(COULANG_TOKEN_KIND_EQ);
+      token = init__CoulangToken(COULANG_TOKEN_KIND_EQ, file.code_pos);
       break;
     case '!':
       if (get_next_char__FileIterator(&file) == '=') {
+        Position temp = file.code_pos;
         consume_char__FileIterator(&file);
-        token = init__CoulangToken(COULANG_TOKEN_KIND_BANG_EQ);
+        token = init__CoulangToken(COULANG_TOKEN_KIND_BANG_EQ, temp);
         break;
       }
-      token = init__CoulangToken(COULANG_TOKEN_KIND_BANG);
+      token = init__CoulangToken(COULANG_TOKEN_KIND_BANG, file.code_pos);
       break;
     case '<':
       if (get_next_char__FileIterator(&file) == '=') {
+        Position temp = file.code_pos;
         consume_char__FileIterator(&file);
-        token = init__CoulangToken(COULANG_TOKEN_KIND_LSHIFT_EQ);
+        token = init__CoulangToken(COULANG_TOKEN_KIND_LSHIFT_EQ, temp);
         break;
       }
-      token = init__CoulangToken(COULANG_TOKEN_KIND_LSHIFT);
-	  break;
+      token = init__CoulangToken(COULANG_TOKEN_KIND_LSHIFT, file.code_pos);
+      break;
     case '>':
       if (get_next_char__FileIterator(&file) == '=') {
+        Position temp = file.code_pos;
         consume_char__FileIterator(&file);
-        token = init__CoulangToken(COULANG_TOKEN_KIND_RSHIFT_EQ);
+        token = init__CoulangToken(COULANG_TOKEN_KIND_RSHIFT_EQ, temp);
         break;
       }
-      token = init__CoulangToken(COULANG_TOKEN_KIND_RSHIFT);
-	  break;
-	case ',':
-	  token = init__CoulangToken(COULANG_TOKEN_KIND_COMMA);
-	  break;
+      token = init__CoulangToken(COULANG_TOKEN_KIND_RSHIFT, file.code_pos);
+      break;
+    case ',':
+      token = init__CoulangToken(COULANG_TOKEN_KIND_COMMA, file.code_pos);
+      break;
     case '\n':
       continue;
     case '"':
       String s = init__String();
+      Position temp = file.code_pos;
       current_char = consume_char__FileIterator(&file);
       while (current_char != '"') {
         add__String(&s, current_char);
@@ -262,11 +264,12 @@ CoulangTokens lex(const char *path) {
           COULANG_INTERPRETER_ERROR("MISSING THE ENDING \" SON OF A BEACH");
         }
       }
-      token = init_string__CoulangToken(s);
+      token = init_string__CoulangToken(s, temp);
       break;
     case '0' ... '9': {
       String s = init__String();
       bool is_float = false;
+      Position temp = file.code_pos;
       while (isdigit(current_char)) {
         if (get_current_char__FileIterator(&file) == '.') {
           add__String(&s, current_char);
@@ -284,31 +287,34 @@ CoulangTokens lex(const char *path) {
       }
       restore_char__FileIteratro(&file);
       if (is_float) {
-        token = init_float__CoulangToken(s);
+        token = init_float__CoulangToken(s, temp);
       } else {
-        token = init_integer__CoulangToken(s);
+        token = init_integer__CoulangToken(s, temp);
       }
       break;
     }
     case 'a' ... 'z': {
       String s = get_next_identifier__FileIterator(&file);
       enum CoulangTokenKind token_kind = get_keyword(s);
+      Position temp = file.code_pos;
       if (token_kind == COULANG_TOKEN_KIND_IDENTIFIER) {
-        token = init_identifier__CoulangToken(s);
+        token = init_identifier__CoulangToken(s, temp);
       } else {
         deinit__String(&s);
-        token = init__CoulangToken(token_kind);
+        token = init__CoulangToken(token_kind, temp);
       }
       break;
     }
     case 'A' ... 'Z': {
+      Position temp = file.code_pos;
       String s = get_next_identifier__FileIterator(&file);
-      token = init_identifier__CoulangToken(s);
+      token = init_identifier__CoulangToken(s, temp);
       break;
     }
     case '_': {
+      Position temp = file.code_pos;
       String s = get_next_identifier__FileIterator(&file);
-      token = init_identifier__CoulangToken(s);
+      token = init_identifier__CoulangToken(s, temp);
       break;
     }
     case '#':
@@ -327,7 +333,8 @@ CoulangTokens lex(const char *path) {
     add__CoulangTokens(&tokens, token);
   }
 
-  add__CoulangTokens(&tokens, init__CoulangToken(COULANG_TOKEN_KIND_EOF));
+  add__CoulangTokens(&tokens,
+                     init__CoulangToken(COULANG_TOKEN_KIND_EOF, file.code_pos));
 
   deinit__FileIterator(&file);
   return tokens;

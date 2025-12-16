@@ -71,6 +71,11 @@ enum CoulangTokenKind {
 };
 
 typedef struct {
+  size_t line;
+  size_t colomne;
+} Position;
+
+typedef struct {
   enum CoulangTokenKind kind;
   union {
     String identifier;
@@ -78,28 +83,41 @@ typedef struct {
     String integer;
     String float_;
   };
+  Position pos;
 } CoulangToken;
 
-static inline CoulangToken init__CoulangToken(enum CoulangTokenKind kind) {
+static inline CoulangToken init__CoulangToken(enum CoulangTokenKind kind,
+                                              Position pos) {
 
-  return (CoulangToken){.kind = kind};
+  return (CoulangToken){
+      .kind = kind,
+      .pos = pos,
+  };
 }
 
-static inline CoulangToken init_identifier__CoulangToken(String identifier) {
+static inline CoulangToken init_identifier__CoulangToken(String identifier,
+                                                         Position pos) {
   return (CoulangToken){.kind = COULANG_TOKEN_KIND_IDENTIFIER,
-                        .identifier = identifier};
+                        .identifier = identifier,
+                        .pos = pos};
 }
 
-static inline CoulangToken init_string__CoulangToken(String string) {
-  return (CoulangToken){.kind = COULANG_TOKEN_KIND_STRING, .string = string};
+static inline CoulangToken init_string__CoulangToken(String string,
+                                                     Position pos) {
+  return (CoulangToken){
+      .kind = COULANG_TOKEN_KIND_STRING, .string = string, .pos = pos};
 }
 
-static inline CoulangToken init_integer__CoulangToken(String integer) {
-  return (CoulangToken){.kind = COULANG_TOKEN_KIND_INTEGER, .integer = integer};
+static inline CoulangToken init_integer__CoulangToken(String integer,
+                                                      Position pos) {
+  return (CoulangToken){
+      .kind = COULANG_TOKEN_KIND_INTEGER, .integer = integer, .pos = pos};
 }
 
-static inline CoulangToken init_float__CoulangToken(String float_) {
-  return (CoulangToken){.kind = COULANG_TOKEN_KIND_FLOAT, .float_ = float_};
+static inline CoulangToken init_float__CoulangToken(String float_,
+                                                    Position pos) {
+  return (CoulangToken){
+      .kind = COULANG_TOKEN_KIND_FLOAT, .float_ = float_, .pos = pos};
 }
 
 extern void deinit__CoulangToken(const CoulangToken *const self);

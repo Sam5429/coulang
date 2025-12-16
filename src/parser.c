@@ -98,7 +98,8 @@ CoulangToken *expect_token(enum CoulangTokenKind expected_token,
                            TokensIterator *ite) {
   CoulangToken *current_token = consume_token__TokensIterator(ite);
   if (current_token->kind != expected_token) {
-    COULANG_ERROR("UNEXPECTED TOKEN YOU SHUT");
+    COULANG_ERROR("UNEXPECTED TOKEN YOU SHUT: %zu, %zu",
+                  current_token->pos.line, current_token->pos.colomne);
   }
   return current_token;
 }
@@ -118,7 +119,8 @@ enum CoulangDataType parse_data_type__Parser(TokensIterator *ite) {
   case COULANG_TOKEN_KIND_KEYWORD_PTR:
     return COULANG_DATA_TYPE_PTR;
   default:
-    COULANG_INTERPRETER_ERROR("unknown data type");
+    COULANG_INTERPRETER_ERROR("unknown data type : %zu, %zu", token->pos.line,
+                              token->pos.colomne);
   }
 }
 
@@ -222,7 +224,9 @@ CoulangExpr *parse_primary_expr(TokensIterator *ite) {
     return expr;
   }
   default:
-    COULANG_INTERPRETER_ERROR("unknown expression");
+    COULANG_INTERPRETER_ERROR("unknown expression : %zu, %zu",
+                              current_token->pos.line,
+                              current_token->pos.colomne);
   }
 
   consume_token__TokensIterator(ite);
@@ -546,7 +550,8 @@ CoulangDecl *parse_declaration__Parser(TokensIterator *ite) {
   case COULANG_TOKEN_KIND_KEYWORD_VAL:
     return parse_variable_declaration__Parser(ite);
   default:
-    COULANG_INTERPRETER_ERROR("unexpected token");
+    COULANG_INTERPRETER_ERROR("unexpected token: %zu %zu",
+                              front_token->pos.line, front_token->pos.colomne);
   }
 }
 
