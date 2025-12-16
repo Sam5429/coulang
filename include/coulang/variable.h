@@ -20,54 +20,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef COULANG_MAP_H
-#define COULANG_MAP_H
+#ifndef COULANG_VARIABLE_H
+#define COULANG_VARIABLE_H
 
-#include <coulang/string.h>
-
-#include <stddef.h>
+#include <coulang/value.h>
 
 typedef struct {
-	const String *key;
-	void *value;
-} MapPair;
+	const String *name;
+	CoulangValue value;
+} CoulangVariable;
 
-typedef struct MapBucket {
-	MapPair pair;
-	struct MapBucket *next;
-} MapBucket;
+CoulangVariable *
+init__CoulangVariable(const String *name, CoulangValue value);
 
-#define DEFAULT_MAP_CAPACITY 8
-
-typedef struct {
-	MapBucket **buckets;
-	size_t len;
-	size_t capacity;
-} Map;
-
-static inline Map
-init__Map()
+static inline void
+deinit__CoulangVariable(CoulangVariable *self)
 {
-	return (Map){
-		.buckets = NULL,
-		.len = 0,
-		.capacity = DEFAULT_MAP_CAPACITY
-	};
+	deinit__CoulangValue(&self->value);
+	free(self);
 }
 
-void *
-get__Map(Map *self, const String *key);
-
-void *
-insert__Map(Map *self, const String *key, void *value);
-
-void
-deinit__Map(const Map *const self);
-
-void
-deinit_functions__Map(const Map *const self);
-
-void
-deinit_variables__Map(const Map *const self);
-
-#endif // COULANG_MAP_H
+#endif // COULANG_VARIABLE_H

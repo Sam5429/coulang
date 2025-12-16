@@ -10,12 +10,17 @@ add_compile_options(-Wall -g)
 
 add_executable(coulang
 	${CMAKE_SOURCE_DIR}/src/ast.c
+	${CMAKE_SOURCE_DIR}/src/function.c
 	${CMAKE_SOURCE_DIR}/src/main.c
 	${CMAKE_SOURCE_DIR}/src/lexer.c
+	${CMAKE_SOURCE_DIR}/src/interpreter.c
 	${CMAKE_SOURCE_DIR}/src/map.c
 	${CMAKE_SOURCE_DIR}/src/parser.c
 	${CMAKE_SOURCE_DIR}/src/scope.c
 	${CMAKE_SOURCE_DIR}/src/string.c
-	${CMAKE_SOURCE_DIR}/src/token.c)
+	${CMAKE_SOURCE_DIR}/src/token.c
+	${CMAKE_SOURCE_DIR}/src/value.c
+	${CMAKE_SOURCE_DIR}/src/variable.c)
 
 target_include_directories(coulang PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(coulang dl)

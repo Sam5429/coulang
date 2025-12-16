@@ -78,10 +78,11 @@ void deinit__CoulangExprUnary(const CoulangExprUnary *const self);
 
 typedef struct {
   struct CoulangExpr *head;
+  size_t len;
 } CoulangExprList;
 
-static inline CoulangExprList init__CoulangExprList(struct CoulangExpr *head) {
-  return (CoulangExprList){.head = head};
+static inline CoulangExprList init__CoulangExprList(struct CoulangExpr *head, size_t len) {
+  return (CoulangExprList){.head = head, .len = len};
 }
 
 void deinit__CoulangExprList(const CoulangExprList *const self);
@@ -120,7 +121,7 @@ typedef struct CoulangExpr {
     CoulangExprBinary binary;
     CoulangExprUnary unary;
     const String *string;
-    uint64_t integer;
+    int64_t integer;
     double float_;
     CoulangExprList list;
     CoulangExpr *grouping;
@@ -135,7 +136,7 @@ CoulangExpr *init_unary__CoulangExpr(CoulangExprUnary unary);
 
 CoulangExpr *init_string__CoulangExpr(const String *string);
 
-CoulangExpr *init_integer__CoulangExpr(uint64_t integer);
+CoulangExpr *init_integer__CoulangExpr(int64_t integer);
 
 CoulangExpr *init_float__CoulangExpr(double float_);
 
