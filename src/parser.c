@@ -432,6 +432,32 @@ CoulangDecl *parse_function_declaration__Parser(TokensIterator *ite) {
 
 CoulangDecl *parse_load_declaration__Parser(TokensIterator *ite) {
   consume_token__TokensIterator(ite);
+
+  CoulangToken *library = expect_token(COULANG_TOKEN_KIND_STRING, ite);
+  const String *library_name = &library->string;
+  CoulangToken *current = get_current_token__TokensIterator(ite);
+  Strings symbols = init__Strings();
+
+  while (current->kind == COULANG_TOKEN_KIND_IDENTIFIER) {
+	  add__Strings(&symbols, init_copy__String(&current->identifier));
+	  consume_token__TokensIterator(ite);
+
+	  current = get_current_token__TokensIterator(ite);
+
+	  if (current->kind == COULANG_TOKEN_KIND_COMMA) {
+		  consume_token__TokensIterator(ite);
+		  current = get_current_token__TokensIterator(ite);
+	  } else {
+		  break;
+	  }
+  }
+
+  CoulangDecl decl = init_load__CoulangDecl(init__CoulangDeclLoad(library_name, symbols));
+  CoulangDecl *decl_p = COULANG_ALLOC(sizeof(CoulangDecl));
+
+  *decl_p = decl;
+
+  return decl_p;
 }
 
 CoulangDecl *parse_variable_declaration__Parser(TokensIterator *ite) {

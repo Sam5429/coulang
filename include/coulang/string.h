@@ -43,6 +43,9 @@ init__String()
 	};
 }
 
+String
+init_copy__String(const String *const other);
+
 void
 add__String(String *self, char c);
 
@@ -76,6 +79,10 @@ add__Strings(Strings *self, String s);
 static inline void
 deinit__Strings(const Strings *const self)
 {
+	for (size_t i = 0; i < self->len; ++i) {
+		deinit__String(&self->buffer[i]);
+	}
+
 	free(self->buffer);
 }
 

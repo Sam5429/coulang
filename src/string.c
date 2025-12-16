@@ -2,6 +2,7 @@
 #include <coulang/string.h>
 
 #include <stdio.h>
+#include <string.h>
 
 void add__String(String *self, char c) {
   if (!self->buffer) {
@@ -13,6 +14,17 @@ void add__String(String *self, char c) {
 
   self->buffer[self->len++] = c;
   self->buffer[self->len] = '\0';
+}
+
+String
+init_copy__String(const String *const other)
+{
+	String s = init__String();
+
+	s.buffer = COULANG_ALLOC(other->capacity * sizeof(char));
+	memcpy(s.buffer, other->buffer, other->capacity);
+
+	return s;
 }
 
 void
