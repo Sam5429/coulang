@@ -209,6 +209,12 @@ CoulangTokens lex(const char *path) {
     case ')':
       token = init__CoulangToken(COULANG_TOKEN_KIND_RPAREN);
       break;
+	case '[':
+      token = init__CoulangToken(COULANG_TOKEN_KIND_LHOOK);
+	  break;
+	case ']':
+      token = init__CoulangToken(COULANG_TOKEN_KIND_RHOOK);
+	  break;
     case '=':
       if (get_next_char__FileIterator(&file) == '=') {
         consume_char__FileIterator(&file);

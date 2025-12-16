@@ -32,6 +32,11 @@ void deinit__CoulangExprBinary(const CoulangExprBinary *const self)
 	deinit__CoulangExpr(self->right);
 }
 
+void deinit__CoulangExprUnary(const CoulangExprUnary *const self)
+{
+	deinit__CoulangExpr(self->right);
+}
+
 void deinit__CoulangExprList(const CoulangExprList *const self)
 {
 	CoulangExpr *current = self->head;
@@ -54,6 +59,11 @@ CoulangExpr *
 init_binary__CoulangExpr(CoulangExprBinary binary)
 {
 	INIT_EXPR(COULANG_EXPR_KIND_BINARY, .binary = binary);
+}
+
+CoulangExpr *init_unary__CoulangExpr(CoulangExprUnary unary)
+{
+	INIT_EXPR(COULANG_EXPR_KIND_UNARY, .unary = unary);
 }
 
 CoulangExpr *
@@ -99,6 +109,10 @@ void deinit__CoulangExpr(CoulangExpr *self)
 	switch (self->kind) {
 		case COULANG_EXPR_KIND_BINARY:
 			deinit__CoulangExprBinary(&self->binary);
+
+			break;
+		case COULANG_EXPR_KIND_UNARY:
+			deinit__CoulangExprUnary(&self->unary);
 
 			break;
 		case COULANG_EXPR_KIND_LIST:

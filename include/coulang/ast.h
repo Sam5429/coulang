@@ -58,6 +58,24 @@ init__CoulangExprBinary(enum CoulangExprBinaryKind kind,
 
 void deinit__CoulangExprBinary(const CoulangExprBinary *const self);
 
+enum CoulangExprUnaryKind {
+	COULANG_EXPR_UNARY_KIND_NEG,
+	COULANG_EXPR_UNARY_KIND_NOT
+};
+
+typedef struct {
+  enum CoulangExprUnaryKind kind;
+	CoulangExpr *right;
+} CoulangExprUnary;
+
+static inline CoulangExprUnary
+init__CoulangExprUnary(enum CoulangExprUnaryKind kind,
+                        struct CoulangExpr *right) {
+  return (CoulangExprUnary){.kind = kind, .right = right};
+}
+
+void deinit__CoulangExprUnary(const CoulangExprUnary *const self);
+
 typedef struct {
   struct CoulangExpr *head;
 } CoulangExprList;
@@ -70,6 +88,7 @@ void deinit__CoulangExprList(const CoulangExprList *const self);
 
 enum CoulangExprKind {
 	COULANG_EXPR_KIND_BINARY,
+	COULANG_EXPR_KIND_UNARY,
 	COULANG_EXPR_KIND_STRING,
 	COULANG_EXPR_KIND_INTEGER,
 	COULANG_EXPR_KIND_FLOAT,
@@ -83,6 +102,7 @@ typedef struct CoulangExpr {
 	struct CoulangExpr *next;
 	union {
 		CoulangExprBinary binary;
+		CoulangExprUnary unary;
 		const String *string;
 		uint64_t integer;
 		double float_;
@@ -93,6 +113,8 @@ typedef struct CoulangExpr {
 } CoulangExpr;
 
 CoulangExpr *init_binary__CoulangExpr(CoulangExprBinary binary);
+
+CoulangExpr *init_unary__CoulangExpr(CoulangExprUnary unary);
 
 CoulangExpr *init_string__CoulangExpr(const String *string);
 

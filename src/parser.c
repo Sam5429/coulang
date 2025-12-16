@@ -135,13 +135,28 @@ enum CoulangDataType parse_data_type__Parser(TokensIterator *ite) {
 CoulangExpr *parse_list(TokensIterator *ite) {
   expect_token(COULANG_TOKEN_KIND_LHOOK, ite);
 
-  CoulangExprList *head = NULL;
-  CoulangExprList *tail = NULL;
+  CoulangExpr *head = NULL;
+  CoulangExpr *tail = NULL;
   CoulangToken *current = get_current_token__TokensIterator(ite);
 
   while (current->kind != COULANG_TOKEN_KIND_RHOOK) {
-    parse_expr(ite);
+	CoulangExpr *expr = parse_expr(ite);
+
+	add__CoulangExpr(expr, &head, &tail);
+
+	current = get_current_token__TokensIterator(ite);
+
+    if (current->kind == COULANG_TOKEN_KIND_COMMA) {
+      consume_token__TokensIterator(ite);
+	  current = get_current_token__TokensIterator(ite);
+	} else {
+		break;
+	}
   }
+
+  expect_token(COULANG_TOKEN_KIND_RHOOK, ite);
+
+  return init_list__CoulangExpr(init__CoulangExprList(head));
 }
 
 CoulangExpr *parse_primary_expr(TokensIterator *ite) {
@@ -171,6 +186,8 @@ CoulangExpr *parse_primary_expr(TokensIterator *ite) {
     expr = init_identifier__CoulangExpr(&current_token->identifier);
 
     break;
+  case COULANG_TOKEN_KIND_LHOOK:
+	return parse_list(ite);
   case COULANG_TOKEN_KIND_LPAREN: {
 	consume_token__TokensIterator(ite);
 
@@ -189,7 +206,18 @@ CoulangExpr *parse_primary_expr(TokensIterator *ite) {
   return expr;
 }
 
-CoulangExpr *parse_unary_expr(TokensIterator *ite) {}
+CoulangExpr *parse_unary_expr(TokensIterator *ite) {
+	static enum CoulangExprUnaryKind tokens_to_unary_kind[] = {
+		[COULANG_TOKEN_KIND_BANG] = COULANG_EXPR_UNARY_KIND_NOT,
+		[COULANG_TOKEN_KIND_MINUS] = COULANG_EXPR_UNARY_KIND_NEG
+	};
+
+    CoulangToken *op_token = consume_token__TokensIterator(ite);
+	enum CoulangExprUnaryKind unary_kind = tokens_to_unary_kind[op_token->kind];
+	CoulangExpr *right = parse_primary_expr(ite);
+
+	return init_unary__CoulangExpr(init__CoulangExprUnary(unary_kind, right));
+}
 
 #define PARSE_RIGHT() \
 	  enum CoulangExprBinaryKind binary_kind = tokens_to_binary_kind[current_token->kind]; \
