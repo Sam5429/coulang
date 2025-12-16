@@ -72,6 +72,12 @@ static CoulangValue
 compute_value_from_identifier_expr__CoulangInterpreter(const CoulangExpr *expr);
 
 static CoulangValue
+compute_value_from_function_decl_call_expr__CoulangInterpreter(CoulangFunction *function);
+
+static CoulangValue
+handle_function_decl_call__CoulangInterpreter(CoulangFunction *function);
+
+static CoulangValue
 compute_value_from_function_call_expr__CoulangInterpreter(const CoulangExpr *expr);
 
 static CoulangValue
@@ -175,11 +181,8 @@ compute_value_from_binary_expr__CoulangInterpreter(const CoulangExpr *expr)
 {
 	CoulangValue left = compute_value_from_expr__CoulangInterpreter(expr->binary.left);
 	CoulangValue right = compute_value_from_expr__CoulangInterpreter(expr->binary.right);
-	int value_kind = left.kind;
 
-	value_kind ^= right.kind;
-
-	if (value_kind == 0) {
+	if ((left.kind ^ right.kind) == 0) {
 		CoulangValue res;
 
 		switch (left.kind) {
@@ -256,15 +259,42 @@ compute_value_from_identifier_expr__CoulangInterpreter(const CoulangExpr *expr)
 	CoulangVariable *variable = get_variable__CoulangScope(current_scope, expr->identifier);
 
 	if (!variable) {
-		COULANG_INTERPRETER_ERROR("cannot found variable: %s", variable->name->buffer);
+		COULANG_INTERPRETER_ERROR("cannot found variable: %s", expr->identifier->buffer);
 	}
 
 	return variable->value;
 }
 
 CoulangValue
+compute_value_from_function_symbol_call_expr__CoulangInterpreter(CoulangFunction *function)
+{
+}
+
+CoulangValue
+compute_value_from_function_decl_call_expr__CoulangInterpreter(CoulangFunction *function)
+{
+}
+
+CoulangValue
 compute_value_from_function_call_expr__CoulangInterpreter(const CoulangExpr *expr)
 {
+	// NOTE: For the time being, we can just have function defined
+	// on the global scope.
+	CoulangScope *global_scope = interpreter_stack.global_scope;
+	CoulangFunction *function = get_function__CoulangScope(global_scope, expr->function_call.name);
+
+	if (!function) {
+		COULANG_INTERPRETER_ERROR("cannot found function: %s", expr->function_call.name->buffer);
+	}
+
+	switch (function->kind) {
+		case COULANG_FUNCTION_KIND_SYMBOL:
+			return compute_value_from_function_symbol_call_expr__CoulangInterpreter(function);
+		case COULANG_FUNCTION_KIND_DECL:
+			return compute_value_from_function_decl_call_expr__CoulangInterpreter(function);
+		default:
+			COULANG_UNREACHABLE("unknown function kind");
+	}
 }
 
 CoulangValue
@@ -288,7 +318,7 @@ compute_value_from_expr__CoulangInterpreter(const CoulangExpr *expr)
 		case COULANG_EXPR_KIND_IDENTIFIER:
 			return compute_value_from_identifier_expr__CoulangInterpreter(expr);
 		case COULANG_EXPR_KIND_FUNCTION_CALL:
-			break;
+			return compute_value_from_function_call_expr__CoulangInterpreter(expr);
 		default:
 			COULANG_UNREACHABLE("unknown expr kind");
 	}
