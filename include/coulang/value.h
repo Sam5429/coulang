@@ -71,7 +71,7 @@ typedef struct CoulangValue {
 } CoulangValue;
 
 static inline CoulangValue
-init_int__CoulangValue(uint64_t int_)
+init_int__CoulangValue(int64_t int_)
 {
 	return (CoulangValue){
 		.kind = COULANG_VALUE_KIND_INT,

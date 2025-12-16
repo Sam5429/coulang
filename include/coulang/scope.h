@@ -26,28 +26,24 @@
 #include <coulang/ast.h>
 #include <coulang/map.h>
 #include <coulang/macros.h>
+#include <coulang/function.h>
 #include <coulang/variable.h>
 
 #include <stdio.h>
 
-typedef struct {
+typedef struct CoulangScope {
 	Map functions;
 	Map variables;
+	struct CoulangScope *parent;
 } CoulangScope;
 
-static inline CoulangScope
-init__CoulangScope()
-{
-	return (CoulangScope){
-		.functions = init__Map(),
-		.variables = init__Map(),
-	};
-}
+CoulangScope *
+init__CoulangScope();
 
 static inline void
-add_function__CoulangScope(CoulangScope *self, CoulangDeclFunction *function)
+add_function__CoulangScope(CoulangScope *self, CoulangFunction *function)
 {
-	if (insert__Map(&self->functions, function->name, function)) {
+	if (insert__Map(&self->functions, get_name__CoulangFunction(function), function)) {
 		COULANG_INTERPRETER_ERROR("duplicate function name");
 	}
 }
@@ -60,17 +56,11 @@ add_variable__CoulangScope(CoulangScope *self, CoulangVariable *variable)
 	}
 }
 
-static inline CoulangDeclFunction *
-get_function__CoulangScope(CoulangScope *self, const String *name)
-{
-	return get__Map(&self->functions, name);
-}
+CoulangFunction *
+get_function__CoulangScope(CoulangScope *self, const String *name);
 
-static inline CoulangVariable *
-get_variable__CoulangScope(CoulangScope *self, const String *name)
-{
-	return get__Map(&self->variables, name);
-}
+CoulangVariable *
+get_variable__CoulangScope(CoulangScope *self, const String *name);
 
 void
 deinit__CoulangScope(CoulangScope *self);

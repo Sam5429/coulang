@@ -128,11 +128,13 @@ CoulangExpr *parse_list(TokensIterator *ite) {
   CoulangExpr *head = NULL;
   CoulangExpr *tail = NULL;
   CoulangToken *current = get_current_token__TokensIterator(ite);
+  size_t len = 0;
 
   while (current->kind != COULANG_TOKEN_KIND_RHOOK) {
     CoulangExpr *expr = parse_expr(ite);
 
     add__CoulangExpr(expr, &head, &tail);
+	++len;
 
     current = get_current_token__TokensIterator(ite);
 
@@ -146,7 +148,7 @@ CoulangExpr *parse_list(TokensIterator *ite) {
 
   expect_token(COULANG_TOKEN_KIND_RHOOK, ite);
 
-  return init_list__CoulangExpr(init__CoulangExprList(head));
+  return init_list__CoulangExpr(init__CoulangExprList(head, len));
 }
 
 CoulangExpr *parse_function_call(TokensIterator *ite, String *function_id) {

@@ -78,10 +78,11 @@ void deinit__CoulangExprUnary(const CoulangExprUnary *const self);
 
 typedef struct {
   struct CoulangExpr *head;
+  size_t len;
 } CoulangExprList;
 
-static inline CoulangExprList init__CoulangExprList(struct CoulangExpr *head) {
-  return (CoulangExprList){.head = head};
+static inline CoulangExprList init__CoulangExprList(struct CoulangExpr *head, size_t len) {
+  return (CoulangExprList){.head = head, .len = len};
 }
 
 void deinit__CoulangExprList(const CoulangExprList *const self);

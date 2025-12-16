@@ -20,54 +20,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef COULANG_MAP_H
-#define COULANG_MAP_H
+#include <coulang/function.h>
+#include <coulang/macros.h>
 
-#include <coulang/string.h>
-
-#include <stddef.h>
-
-typedef struct {
-	const String *key;
-	void *value;
-} MapPair;
-
-typedef struct MapBucket {
-	MapPair pair;
-	struct MapBucket *next;
-} MapBucket;
-
-#define DEFAULT_MAP_CAPACITY 8
-
-typedef struct {
-	MapBucket **buckets;
-	size_t len;
-	size_t capacity;
-} Map;
-
-static inline Map
-init__Map()
+CoulangFunction *
+init_symbol__CoulangFunction(CoulangFunctionSymbol symbol)
 {
-	return (Map){
-		.buckets = NULL,
-		.len = 0,
-		.capacity = DEFAULT_MAP_CAPACITY
+	CoulangFunction *self = COULANG_ALLOC(sizeof(CoulangFunction));
+
+	*self = (CoulangFunction){
+		.kind = COULANG_FUNCTION_KIND_SYMBOL,
+		.symbol = symbol
 	};
+
+	return self;
 }
 
-void *
-get__Map(Map *self, const String *key);
+CoulangFunction *
+init_decl__CoulangFunction(const CoulangDeclFunction *decl)
+{
+	CoulangFunction *self = COULANG_ALLOC(sizeof(CoulangFunction));
 
-void *
-insert__Map(Map *self, const String *key, void *value);
+	*self = (CoulangFunction){
+		.kind = COULANG_FUNCTION_KIND_DECL,
+		.decl = decl
+	};
 
-void
-deinit__Map(const Map *const self);
-
-void
-deinit_functions__Map(const Map *const self);
-
-void
-deinit_variables__Map(const Map *const self);
-
-#endif // COULANG_MAP_H
+	return self;
+}

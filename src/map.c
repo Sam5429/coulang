@@ -22,6 +22,7 @@
 
 #include <coulang/map.h>
 #include <coulang/macros.h>
+#include <coulang/function.h>
 #include <coulang/variable.h>
 
 #include <stdio.h>
@@ -240,6 +241,12 @@ deinit__Map(const Map *const self)
 
 		free(self->buckets);
 	}
+}
+
+void
+deinit_functions__Map(const Map *const self)
+{
+	MAP_T_FREE(self, CoulangFunction);
 }
 
 void

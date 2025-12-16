@@ -20,52 +20,65 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <coulang/scope.h>
+#ifndef COULANG_FUNCTION_H
+#define COULANG_FUNCTION_H
 
-CoulangScope *
-init__CoulangScope()
+#include <coulang/ast.h>
+#include <coulang/macros.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct {
+	const String *name;
+	void *symbol;
+} CoulangFunctionSymbol;
+
+static inline CoulangFunctionSymbol
+init__CoulangFunctionSymbol(const String *name, void *symbol)
 {
-	CoulangScope *self = COULANG_ALLOC(sizeof(CoulangScope));
-
-	*self = (CoulangScope){
-		.functions = init__Map(),
-		.variables = init__Map(),
-		.parent = NULL
+	return (CoulangFunctionSymbol){
+		.name = name,
+		.symbol = symbol
 	};
-
-	return self;
 }
 
-#define GET_T_SCOPE(type) \
-	CoulangScope *current = self; \
-	type *variable = NULL; \
-\
-	while (current && !variable) { \
-		variable = get__Map(&self->variables, name); \
-		current = current->parent; \
-	} \
-\
-	return variable;
+enum CoulangFunctionKind {
+	COULANG_FUNCTION_KIND_SYMBOL,
+	COULANG_FUNCTION_KIND_DECL
+};
 
+typedef struct {
+	enum CoulangFunctionKind kind;
+	union {
+		CoulangFunctionSymbol symbol;
+		const CoulangDeclFunction *decl;
+	};
+} CoulangFunction;
 
 CoulangFunction *
-get_function__CoulangScope(CoulangScope *self, const String *name)
+init_symbol__CoulangFunction(CoulangFunctionSymbol symbol);
+
+CoulangFunction *
+init_decl__CoulangFunction(const CoulangDeclFunction *decl);
+
+static inline const String *
+get_name__CoulangFunction(const CoulangFunction *self)
 {
-	GET_T_SCOPE(CoulangFunction);
+	switch (self->kind) {
+		case COULANG_FUNCTION_KIND_SYMBOL:
+			return self->symbol.name;
+		case COULANG_FUNCTION_KIND_DECL:
+			return self->decl->name;
+		default:
+			COULANG_UNREACHABLE("unknown function kind");
+	}
 }
 
-CoulangVariable *
-get_variable__CoulangScope(CoulangScope *self, const String *name)
+static inline void
+deinit__CoulangFunction(CoulangFunction *self)
 {
-	GET_T_SCOPE(CoulangVariable);
-}
-
-#undef GET_T_SCOPE
-
-void
-deinit__CoulangScope(CoulangScope *self)
-{
-	deinit_functions__Map(&self->functions);
-	deinit_variables__Map(&self->variables);
 	free(self);
 }
+
+#endif // COULANG_FUNCTION_H
