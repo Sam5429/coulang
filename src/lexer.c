@@ -329,27 +329,6 @@ CoulangTokens lex(const char *path) {
 
   add__CoulangTokens(&tokens, init__CoulangToken(COULANG_TOKEN_KIND_EOF));
 
-  for (size_t i = 0; i < tokens.len; ++i) {
-    CoulangToken current = tokens.buffer[i];
-
-    switch (current.kind) {
-    case COULANG_TOKEN_KIND_IDENTIFIER:
-      printf("%d: %s\n", current.kind, current.identifier.buffer);
-      break;
-    case COULANG_TOKEN_KIND_FLOAT:
-      printf("%d: %s\n", current.kind, current.float_.buffer);
-      break;
-    case COULANG_TOKEN_KIND_INTEGER:
-      printf("%d: %s\n", current.kind, current.integer.buffer);
-      break;
-    case COULANG_TOKEN_KIND_STRING:
-      printf("%d: %s\n", current.kind, current.string.buffer);
-      break;
-    default:
-      printf("%d\n", current.kind);
-    }
-  }
-
   deinit__FileIterator(&file);
   return tokens;
 }
