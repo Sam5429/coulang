@@ -64,4 +64,7 @@ insert__Map(Map *self, const String *key, void *value);
 void
 deinit__Map(const Map *const self);
 
+void
+deinit_variables__Map(const Map *const self);
+
 #endif // COULANG_MAP_H

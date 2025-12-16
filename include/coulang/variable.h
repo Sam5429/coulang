@@ -20,47 +20,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef COULANG_SCOPE_H
-#define COULANG_SCOPE_H
+#ifndef COULANG_VARIABLE_H
+#define COULANG_VARIABLE_H
 
-#include <coulang/ast.h>
-#include <coulang/map.h>
-#include <coulang/macros.h>
-#include <coulang/variable.h>
-
-#include <stdio.h>
+#include <coulang/value.h>
 
 typedef struct {
-	Map functions;
-	Map variables;
-} CoulangScope;
+	const String *name;
+	CoulangValue value;
+} CoulangVariable;
 
-static inline CoulangScope
-init__CoulangScope()
-{
-	return (CoulangScope){
-		.functions = init__Map(),
-		.variables = init__Map(),
-	};
-}
+CoulangVariable *
+init__CoulangVariable(const String *name, CoulangValue value);
 
 static inline void
-add_function__CoulangScope(CoulangScope *self, CoulangDeclFunction *function)
+deinit__CoulangVariable(CoulangVariable *self)
 {
-	if (insert__Map(&self->functions, function->name, function)) {
-		COULANG_INTERPRETER_ERROR("duplicate function name");
-	}
+	deinit__CoulangValue(&self->value);
+	free(self);
 }
 
-static inline void
-add_variable__CoulangScope(CoulangScope *self, CoulangVariable *variable)
-{
-	if (insert__Map(&self->variables, variable->name, variable)) {
-		COULANG_INTERPRETER_ERROR("duplicate variable name");
-	}
-}
-
-void
-deinit__CoulangScope(CoulangScope *self);
-
-#endif // COULANG_SCOPE_H
+#endif // COULANG_VARIABLE_H

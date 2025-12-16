@@ -22,6 +22,7 @@
 
 #include <coulang/map.h>
 #include <coulang/macros.h>
+#include <coulang/variable.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -211,12 +212,38 @@ insert__Map(Map *self, const String *key, void *value)
 #undef INDEX
 }
 
+#define MAP_T_FREE(self, type) \
+	if (self->buckets) { \
+		for (size_t i = 0; i < self->capacity; ++i) { \
+			if (self->buckets[i]) { \
+				MapBucket *current = self->buckets[i]; \
+				while (current->next) { \
+					deinit__##type(current->pair.value); \
+					current = current->next; \
+				} \
+				deinit__##type(current->pair.value); \
+				deinit__MapBucket(self->buckets[i]); \
+			} \
+		} \
+		free(self->buckets); \
+	}
+
 void
 deinit__Map(const Map *const self)
 {
-	for (size_t i = 0; i < self->len; ++i) {
-		deinit__MapBucket(self->buckets[i]);
-	}
+	if (self->buckets) {
+		for (size_t i = 0; i < self->len; ++i) {
+			if (self->buckets[i]) {
+				deinit__MapBucket(self->buckets[i]);
+			}
+		}
 
-	free(self->buckets);
+		free(self->buckets);
+	}
+}
+
+void
+deinit_variables__Map(const Map *const self)
+{
+	MAP_T_FREE(self, CoulangVariable);
 }

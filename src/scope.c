@@ -21,3 +21,10 @@
 // SOFTWARE.
 
 #include <coulang/scope.h>
+
+void
+deinit__CoulangScope(CoulangScope *self)
+{
+	deinit__Map(&self->functions);
+	deinit_variables__Map(&self->variables);
+}
