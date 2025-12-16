@@ -27,7 +27,9 @@
 
 #define COULANG_ALLOC(size) COULANG_F_ALLOC(malloc, size)
 
-#define COULANG_ZERO_ALLOC(size) COULANG_F_ALLOC(calloc, 1, size);
+#define COULANG_ARRAY_ALLOC(n, size) COULANG_F_ALLOC(calloc, n, size);
+
+#define COULANG_ZERO_ALLOC(size) COULANG_ARRAY_ALLOC(1, size);
 
 #define COULANG_REALLOC(ptr, size) COULANG_F_ALLOC(realloc, ptr, size);
 
