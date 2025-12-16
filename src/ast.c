@@ -208,6 +208,33 @@ void deinit__CoulangDeclFunctionParam(CoulangDeclFunctionParam *self) {
   }
 }
 
+CoulangDeclLoadFunction *
+init__CoulangDeclLoadFunction(const String *name,
+                              enum CoulangDataType data_type) {
+  CoulangDeclLoadFunction *self =
+      COULANG_ALLOC(sizeof(CoulangDeclLoadFunction));
+
+  *self = (CoulangDeclLoadFunction){
+      .name = name,
+      .type = data_type,
+      .next = NULL,
+  };
+
+  return self;
+}
+
+void deinit__CoulangDeclLoadFunction(CoulangDeclLoadFunction *self) {
+  CoulangDeclLoadFunction *current = self;
+
+  while (current) {
+    CoulangDeclLoadFunction *next = current->next;
+
+    free(current);
+
+    current = next;
+  }
+}
+
 void deinit__CoulangDeclFunctionBodyItem(CoulangDeclFunctionBodyItem *self) {
   switch (self->kind) {
   case COULANG_DECL_FUNCTION_BODY_ITEM_KIND_EXPR:

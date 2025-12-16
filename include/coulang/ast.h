@@ -81,7 +81,8 @@ typedef struct {
   size_t len;
 } CoulangExprList;
 
-static inline CoulangExprList init__CoulangExprList(struct CoulangExpr *head, size_t len) {
+static inline CoulangExprList init__CoulangExprList(struct CoulangExpr *head,
+                                                    size_t len) {
   return (CoulangExprList){.head = head, .len = len};
 }
 
@@ -256,18 +257,45 @@ void deinit__CoulangStmt(const CoulangStmt *const self);
 
 typedef struct CoulangDecl CoulangDecl;
 
+typedef struct CoulangDeclLoadFunction {
+  const String *name;
+  enum CoulangDataType type;
+  struct CoulangDeclLoadFunction *next;
+} CoulangDeclLoadFunction;
+
+CoulangDeclLoadFunction *
+init__CoulangDeclLoadFunction(const String *name,
+                              enum CoulangDataType data_type);
+
+static inline void
+add__CoulangDeclLoadFunction(CoulangDeclLoadFunction *self,
+                             CoulangDeclLoadFunction **head,
+                             CoulangDeclLoadFunction **tail) {
+  if (!*head) {
+    *head = self;
+  }
+
+  if (*tail) {
+    (*tail)->next = self;
+  }
+
+  *tail = self;
+}
+
+void deinit__CoulangDeclLoadFunction(CoulangDeclLoadFunction *self);
+
 typedef struct {
   const String *library;
-  Strings symbols;
+  CoulangDeclLoadFunction *symbols;
 } CoulangDeclLoad;
 
-static inline CoulangDeclLoad init__CoulangDeclLoad(const String *library,
-                                                    Strings symbols) {
+static inline CoulangDeclLoad
+init__CoulangDeclLoad(const String *library, CoulangDeclLoadFunction *symbols) {
   return (CoulangDeclLoad){.library = library, .symbols = symbols};
 }
 
 static inline void deinit__CoulangDeclLoad(const CoulangDeclLoad *const self) {
-  deinit__Strings(&self->symbols);
+  deinit__CoulangDeclLoadFunction(self->symbols);
 }
 
 typedef struct CoulangDeclFunctionParam {

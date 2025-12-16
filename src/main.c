@@ -20,11 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <coulang/interpreter.h>
+#include <coulang/lexer.h>
+#include <coulang/macros.h>
 #include <coulang/parser.h>
 #include <coulang/token.h>
-#include <coulang/lexer.h>
-#include <coulang/interpreter.h>
-#include <coulang/macros.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   CoulangDeclFunctionBody body = init__CoulangDeclFunctionBody();
 
   parse_declarations__Parser(&ite, &body);
-  run__CoulangInterpreter(&body);
+  // run__CoulangInterpreter(&body);
   deinit__CoulangDeclFunctionBody(&body);
   deinit__CoulangTokens(&tokens);
 

@@ -136,7 +136,7 @@ CoulangExpr *parse_list(TokensIterator *ite) {
     CoulangExpr *expr = parse_expr(ite);
 
     add__CoulangExpr(expr, &head, &tail);
-	++len;
+    ++len;
 
     current = get_current_token__TokensIterator(ite);
 
@@ -491,19 +491,24 @@ CoulangDecl *parse_function_declaration__Parser(TokensIterator *ite) {
   return decl_p;
 }
 
-CoulangDecl *parse_load_declaration__Parser(TokensIterator *ite) {
-  consume_token__TokensIterator(ite);
-
-  CoulangToken *library = expect_token(COULANG_TOKEN_KIND_STRING, ite);
-  const String *library_name = &library->string;
+CoulangDeclLoadFunction *parse_load_function__Parser(TokensIterator *ite) {
+  CoulangDeclLoadFunction *head = NULL;
+  CoulangDeclLoadFunction *tail = NULL;
   CoulangToken *current = get_current_token__TokensIterator(ite);
-  Strings symbols = init__Strings();
 
   while (current->kind == COULANG_TOKEN_KIND_IDENTIFIER) {
-    add__Strings(&symbols, init_copy__String(&current->identifier));
-    consume_token__TokensIterator(ite);
 
-    current = get_current_token__TokensIterator(ite);
+    CoulangToken *token_identifier =
+        expect_token(COULANG_TOKEN_KIND_IDENTIFIER, ite);
+    const String *const name = &token_identifier->identifier;
+    enum CoulangDataType data_type = parse_data_type__Parser(ite);
+
+    CoulangToken *current = get_current_token__TokensIterator(ite);
+
+    CoulangDeclLoadFunction *param =
+        init__CoulangDeclLoadFunction(name, data_type);
+
+    add__CoulangDeclLoadFunction(param, &head, &tail);
 
     if (current->kind == COULANG_TOKEN_KIND_COMMA) {
       consume_token__TokensIterator(ite);
@@ -512,6 +517,17 @@ CoulangDecl *parse_load_declaration__Parser(TokensIterator *ite) {
       break;
     }
   }
+
+  return head;
+}
+
+CoulangDecl *parse_load_declaration__Parser(TokensIterator *ite) {
+  consume_token__TokensIterator(ite);
+
+  CoulangToken *library = expect_token(COULANG_TOKEN_KIND_STRING, ite);
+  const String *library_name = &library->string;
+  // CoulangToken *current = get_current_token__TokensIterator(ite);
+  CoulangDeclLoadFunction *symbols = parse_load_function__Parser(ite);
 
   CoulangDecl decl =
       init_load__CoulangDecl(init__CoulangDeclLoad(library_name, symbols));
