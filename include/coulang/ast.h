@@ -59,18 +59,18 @@ init__CoulangExprBinary(enum CoulangExprBinaryKind kind,
 void deinit__CoulangExprBinary(const CoulangExprBinary *const self);
 
 enum CoulangExprUnaryKind {
-	COULANG_EXPR_UNARY_KIND_NEG,
-	COULANG_EXPR_UNARY_KIND_NOT
+  COULANG_EXPR_UNARY_KIND_NEG,
+  COULANG_EXPR_UNARY_KIND_NOT
 };
 
 typedef struct {
   enum CoulangExprUnaryKind kind;
-	CoulangExpr *right;
+  CoulangExpr *right;
 } CoulangExprUnary;
 
 static inline CoulangExprUnary
 init__CoulangExprUnary(enum CoulangExprUnaryKind kind,
-                        struct CoulangExpr *right) {
+                       struct CoulangExpr *right) {
   return (CoulangExprUnary){.kind = kind, .right = right};
 }
 
@@ -86,30 +86,47 @@ static inline CoulangExprList init__CoulangExprList(struct CoulangExpr *head) {
 
 void deinit__CoulangExprList(const CoulangExprList *const self);
 
+typedef struct {
+  String *name;
+  CoulangExpr *params;
+} CoulangExprFunctionCall;
+
+static inline CoulangExprFunctionCall
+init__CoulangExprFunctionCall(String *function_name, struct CoulangExpr *head) {
+  return (CoulangExprFunctionCall){
+      .name = function_name,
+      .params = head,
+  };
+}
+
+void deinit__CoulangExprFunctionCall(const CoulangExprFunctionCall *const self);
+
 enum CoulangExprKind {
-	COULANG_EXPR_KIND_BINARY,
-	COULANG_EXPR_KIND_UNARY,
-	COULANG_EXPR_KIND_STRING,
-	COULANG_EXPR_KIND_INTEGER,
-	COULANG_EXPR_KIND_FLOAT,
-	COULANG_EXPR_KIND_LIST,
-	COULANG_EXPR_KIND_GROUPING,
-	COULANG_EXPR_KIND_IDENTIFIER
+  COULANG_EXPR_KIND_BINARY,
+  COULANG_EXPR_KIND_UNARY,
+  COULANG_EXPR_KIND_STRING,
+  COULANG_EXPR_KIND_INTEGER,
+  COULANG_EXPR_KIND_FLOAT,
+  COULANG_EXPR_KIND_LIST,
+  COULANG_EXPR_KIND_GROUPING,
+  COULANG_EXPR_KIND_IDENTIFIER,
+  COULANG_EXPR_KIND_FUNCTION_CALL,
 };
 
 typedef struct CoulangExpr {
-	enum CoulangExprKind kind;
-	struct CoulangExpr *next;
-	union {
-		CoulangExprBinary binary;
-		CoulangExprUnary unary;
-		const String *string;
-		uint64_t integer;
-		double float_;
-		CoulangExprList list;
-		CoulangExpr *grouping;
-		const String *identifier;
-	};
+  enum CoulangExprKind kind;
+  struct CoulangExpr *next;
+  union {
+    CoulangExprBinary binary;
+    CoulangExprUnary unary;
+    const String *string;
+    uint64_t integer;
+    double float_;
+    CoulangExprList list;
+    CoulangExpr *grouping;
+    const String *identifier;
+    CoulangExprFunctionCall function_call;
+  };
 } CoulangExpr;
 
 CoulangExpr *init_binary__CoulangExpr(CoulangExprBinary binary);
@@ -126,21 +143,22 @@ CoulangExpr *init_list__CoulangExpr(CoulangExprList list);
 
 CoulangExpr *init_grouping__CoulangExpr(CoulangExpr *grouping);
 
+CoulangExpr *init_identifier__CoulangExpr(const String *identifier);
+
 CoulangExpr *
-init_identifier__CoulangExpr(const String *identifier);
+init_functin_call__CoulangExpr(CoulangExprFunctionCall function_call);
 
-static inline void
-add__CoulangExpr(CoulangExpr *self, CoulangExpr **head, CoulangExpr **tail)
-{
-	if (!*head) {
-		*head = self;
-	}
+static inline void add__CoulangExpr(CoulangExpr *self, CoulangExpr **head,
+                                    CoulangExpr **tail) {
+  if (!*head) {
+    *head = self;
+  }
 
-	if (*tail) {
-		(*tail)->next = self;
-	}
+  if (*tail) {
+    (*tail)->next = self;
+  }
 
-	*tail = self;
+  *tail = self;
 }
 
 void deinit__CoulangExpr(CoulangExpr *self);
@@ -167,10 +185,10 @@ init__CoulangStmtIfBranch(CoulangExpr *cond, CoulangDeclFunctionBody *body) {
 }
 
 static inline void add__CoulangStmtIfBranch(CoulangStmtIfBranch *self,
-											CoulangStmtIfBranch **head,
+                                            CoulangStmtIfBranch **head,
                                             CoulangStmtIfBranch **tail) {
   if (!*head) {
-	*head = self;
+    *head = self;
   }
 
   if (*tail) {
@@ -344,9 +362,10 @@ typedef struct {
 
 static inline CoulangDeclFunction
 init__CoulangDeclFunction(const String *name, CoulangDeclFunctionParam *params,
-						  enum CoulangDataType data_type,
+                          enum CoulangDataType data_type,
                           CoulangDeclFunctionBody body) {
-  return (CoulangDeclFunction){.name = name, .params = params, .data_type = data_type, .body = body};
+  return (CoulangDeclFunction){
+      .name = name, .params = params, .data_type = data_type, .body = body};
 }
 
 static inline void

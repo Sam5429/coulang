@@ -12,6 +12,7 @@ val n int = !0
 
 fn main() int {
 	val x int = 20
+	test("d")
 
 	while 1 {
 	}
