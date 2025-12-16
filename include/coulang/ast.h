@@ -316,13 +316,15 @@ void deinit__CoulangDeclFunctionBody(const CoulangDeclFunctionBody *const self);
 typedef struct {
   const String *name;
   CoulangDeclFunctionParam *params;
+  enum CoulangDataType data_type;
   CoulangDeclFunctionBody body;
 } CoulangDeclFunction;
 
 static inline CoulangDeclFunction
 init__CoulangDeclFunction(const String *name, CoulangDeclFunctionParam *params,
+						  enum CoulangDataType data_type,
                           CoulangDeclFunctionBody body) {
-  return (CoulangDeclFunction){.name = name, .params = params, .body = body};
+  return (CoulangDeclFunction){.name = name, .params = params, .data_type = data_type, .body = body};
 }
 
 static inline void

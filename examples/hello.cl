@@ -1,6 +1,9 @@
 fn add(x int, y int) int {
-	if 1 {
-	}
+	return x + y
+}
 
-	return x < 10
+val PI float = 3.14
+
+fn main() int {
+	val x int = 20
 }

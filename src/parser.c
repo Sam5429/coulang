@@ -364,6 +364,9 @@ CoulangDeclFunctionBody parse_function_body__Parser(TokensIterator *ite) {
 	case COULANG_TOKEN_KIND_KEYWORD_RETURN:
       item = init_stmt__CoulangDeclFunctionBodyItem(parse_stmt_return(ite));
       break;
+	case COULANG_TOKEN_KIND_KEYWORD_VAL:
+      item = init_decl__CoulangDeclFunctionBodyItem(parse_variable_declaration__Parser(ite));
+	  break;
     default:
       item = init_expr__CoulangDeclFunctionBodyItem(parse_expr(ite));
     }
@@ -419,7 +422,7 @@ CoulangDecl *parse_function_declaration__Parser(TokensIterator *ite) {
       parse_function_params_declaration__Parser(ite);
   enum CoulangDataType return_data_type = parse_data_type__Parser(ite);
   CoulangDeclFunctionBody body = parse_function_body__Parser(ite);
-  CoulangDecl decl = init_function__CoulangDecl(init__CoulangDeclFunction(name, params, body));
+  CoulangDecl decl = init_function__CoulangDecl(init__CoulangDeclFunction(name, params, return_data_type, body));
   CoulangDecl *decl_p = COULANG_ALLOC(sizeof(CoulangDecl));
 
   *decl_p = decl;
@@ -427,9 +430,27 @@ CoulangDecl *parse_function_declaration__Parser(TokensIterator *ite) {
   return decl_p;
 }
 
-CoulangDecl *parse_load_declaration__Parser(TokensIterator *ite) {}
+CoulangDecl *parse_load_declaration__Parser(TokensIterator *ite) {
+  consume_token__TokensIterator(ite);
+}
 
-CoulangDecl *parse_variable_declaration__Parser(TokensIterator *ite) {}
+CoulangDecl *parse_variable_declaration__Parser(TokensIterator *ite) {
+  consume_token__TokensIterator(ite);
+
+  CoulangToken *token = expect_token(COULANG_TOKEN_KIND_IDENTIFIER, ite);
+  const String *name = &token->identifier;
+  enum CoulangDataType data_type = parse_data_type__Parser(ite);
+
+  expect_token(COULANG_TOKEN_KIND_EQ, ite);
+
+  CoulangExpr *expr = parse_expr(ite);
+  CoulangDecl decl = init_variable__CoulangDecl(init__CoulangDeclVariable(name, data_type, expr));
+  CoulangDecl *decl_p = COULANG_ALLOC(sizeof(CoulangDecl));
+
+  *decl_p = decl;
+
+  return decl_p;
+}
 
 CoulangDecl *parse_declaration__Parser(TokensIterator *ite) {
   CoulangToken *front_token = get_current_token__TokensIterator(ite);
@@ -439,7 +460,7 @@ CoulangDecl *parse_declaration__Parser(TokensIterator *ite) {
     return parse_function_declaration__Parser(ite);
   case COULANG_TOKEN_KIND_KEYWORD_LOAD:
     return parse_load_declaration__Parser(ite);
-  case COULANG_TOKEN_KIND_IDENTIFIER:
+  case COULANG_TOKEN_KIND_KEYWORD_VAL:
     return parse_variable_declaration__Parser(ite);
   default:
     COULANG_INTERPRETER_ERROR("unexpected token");
