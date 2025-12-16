@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(coulang LANGUAGES C)
+project(coulang LANGUAGES C ASM)
 
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -8,7 +8,14 @@ set(CMAKE_C_EXTENSIONS ON)
 
 add_compile_options(-Wall -g)
 
+if(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "x86_64")
+	set(SYMBOL_RUNNER ${CMAKE_SOURCE_DIR}/src/x86_64/symbol_runner.S)
+else()
+	message(FATAL_ERROR "`${HOST_ARCH}` is not supported")
+endif()
+
 add_executable(coulang
+	${SYMBOL_RUNNER}
 	${CMAKE_SOURCE_DIR}/src/ast.c
 	${CMAKE_SOURCE_DIR}/src/function.c
 	${CMAKE_SOURCE_DIR}/src/main.c

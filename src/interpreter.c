@@ -261,10 +261,37 @@ CoulangValue compute_value_from_identifier_expr__CoulangInterpreter(
 }
 
 CoulangValue compute_value_from_function_symbol_call_expr__CoulangInterpreter(
-    CoulangFunction *function) {}
+    CoulangFunction *function) {
+	switch (function->symbol.data_type) {
+		case COULANG_DATA_TYPE_INT:
+#ifdef __x86_64__
+			__asm__ __volatile__(
+				"call *%[addr]\n"
+				:
+				: [addr] "r" (function->symbol.addr)
+				: "memory"
+			);
+#else
+#error "Unknown arch"
+#endif
+
+			break;
+		case COULANG_DATA_TYPE_FLOAT:
+			break;
+		case COULANG_DATA_TYPE_LIST:
+			break;
+		case COULANG_DATA_TYPE_STR:
+			break;
+		case COULANG_DATA_TYPE_PTR:
+			break;
+		default:
+			COULANG_UNREACHABLE("unknown data type");
+	}
+}
 
 CoulangValue compute_value_from_function_decl_call_expr__CoulangInterpreter(
-    CoulangFunction *function) {}
+    CoulangFunction *function) {
+}
 
 CoulangValue compute_value_from_function_call_expr__CoulangInterpreter(
     const CoulangExpr *expr) {
@@ -334,13 +361,13 @@ void handle_load_decl__CoulangInterpreter(const CoulangDecl *decl) {
   CoulangDeclLoadFunction *current = decl->load.symbols;
   while (current) {
     const String *symbol_name = current->name;
-    void *symbol = dlsym(lib_handle, symbol_name->buffer);
+    void *addr = dlsym(lib_handle, symbol_name->buffer);
 
-    if (symbol) {
+    if (addr) {
       add_function__CoulangScope(
           interpreter_stack.global_scope,
           init_symbol__CoulangFunction(
-              init__CoulangFunctionSymbol(symbol_name, symbol)));
+              init__CoulangFunctionSymbol(symbol_name, addr, current->data_type)));
     } else {
       COULANG_INTERPRETER_ERROR("`%s` symbol cannot be loaded from: %s",
                                 symbol_name->buffer,

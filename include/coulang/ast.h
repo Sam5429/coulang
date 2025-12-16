@@ -259,7 +259,7 @@ typedef struct CoulangDecl CoulangDecl;
 
 typedef struct CoulangDeclLoadFunction {
   const String *name;
-  enum CoulangDataType type;
+  enum CoulangDataType data_type;
   struct CoulangDeclLoadFunction *next;
 } CoulangDeclLoadFunction;
 

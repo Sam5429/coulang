@@ -31,15 +31,17 @@
 
 typedef struct {
 	const String *name;
-	void *symbol;
+	void *addr;
+	enum CoulangDataType data_type;
 } CoulangFunctionSymbol;
 
 static inline CoulangFunctionSymbol
-init__CoulangFunctionSymbol(const String *name, void *symbol)
+init__CoulangFunctionSymbol(const String *name, void *addr, enum CoulangDataType data_type)
 {
 	return (CoulangFunctionSymbol){
 		.name = name,
-		.symbol = symbol
+		.addr = addr,
+		.data_type = data_type
 	};
 }
 

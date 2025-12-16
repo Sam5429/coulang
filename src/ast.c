@@ -216,7 +216,7 @@ init__CoulangDeclLoadFunction(const String *name,
 
   *self = (CoulangDeclLoadFunction){
       .name = name,
-      .type = data_type,
+      .data_type = data_type,
       .next = NULL,
   };
 
