@@ -11,7 +11,7 @@ add_compile_options(-Wall -g)
 if(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "x86_64")
 	set(SYMBOL_RUNNER ${CMAKE_SOURCE_DIR}/src/x86_64/symbol_runner.S)
 else()
-	message(FATAL_ERROR "`${HOST_ARCH}` is not supported")
+	message(FATAL_ERROR "`${CMAKE_HOST_SYSTEM_PROCESSOR}` is not supported")
 endif()
 
 add_executable(coulang
