@@ -24,6 +24,7 @@
 #define COULANG_AST_H
 
 #include <coulang/string.h>
+#include <coulang/data_type.h>
 
 #include <stdint.h>
 
@@ -91,13 +92,15 @@ void deinit__CoulangExprList(const CoulangExprList *const self);
 typedef struct {
   String *name;
   CoulangExpr *params;
+  size_t params_len;
 } CoulangExprFunctionCall;
 
 static inline CoulangExprFunctionCall
-init__CoulangExprFunctionCall(String *function_name, struct CoulangExpr *head) {
+init__CoulangExprFunctionCall(String *function_name, struct CoulangExpr *params, size_t params_len) {
   return (CoulangExprFunctionCall){
       .name = function_name,
-      .params = head,
+      .params = params,
+	  .params_len = params_len
   };
 }
 
@@ -164,14 +167,6 @@ static inline void add__CoulangExpr(CoulangExpr *self, CoulangExpr **head,
 }
 
 void deinit__CoulangExpr(CoulangExpr *self);
-
-enum CoulangDataType {
-  COULANG_DATA_TYPE_INT,
-  COULANG_DATA_TYPE_FLOAT,
-  COULANG_DATA_TYPE_LIST,
-  COULANG_DATA_TYPE_STR,
-  COULANG_DATA_TYPE_PTR,
-};
 
 typedef struct CoulangDeclFunctionBody CoulangDeclFunctionBody;
 

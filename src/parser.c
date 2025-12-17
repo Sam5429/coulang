@@ -159,12 +159,14 @@ CoulangExpr *parse_function_call(TokensIterator *ite, String *function_id) {
 
   CoulangExpr *head = NULL;
   CoulangExpr *tail = NULL;
+  size_t params_len = 0;
   CoulangToken *current = get_current_token__TokensIterator(ite);
 
   while (current->kind != COULANG_TOKEN_KIND_RPAREN) {
     CoulangExpr *expr = parse_expr(ite);
 
     add__CoulangExpr(expr, &head, &tail);
+	++params_len;
 
     current = get_current_token__TokensIterator(ite);
 
@@ -179,7 +181,7 @@ CoulangExpr *parse_function_call(TokensIterator *ite, String *function_id) {
   expect_token(COULANG_TOKEN_KIND_RPAREN, ite);
 
   return init_functin_call__CoulangExpr(
-      init__CoulangExprFunctionCall(&name_tok->string, head));
+      init__CoulangExprFunctionCall(&name_tok->string, head, params_len));
 }
 
 CoulangExpr *parse_primary_expr(TokensIterator *ite) {
@@ -502,6 +504,10 @@ CoulangDeclLoadFunction *parse_load_function__Parser(TokensIterator *ite) {
         expect_token(COULANG_TOKEN_KIND_IDENTIFIER, ite);
     const String *const name = &token_identifier->identifier;
     enum CoulangDataType data_type = parse_data_type__Parser(ite);
+
+	if (data_type != COULANG_DATA_TYPE_INT && data_type != COULANG_DATA_TYPE_FLOAT && data_type != COULANG_DATA_TYPE_PTR) {
+		COULANG_INTERPRETER_ERROR("invalid return data type for a symbol");
+	}
 
     CoulangToken *current = get_current_token__TokensIterator(ite);
 

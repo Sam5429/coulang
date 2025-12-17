@@ -20,7 +20,55 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <coulang/macros.h>
 #include <coulang/value.h>
+
+#include <stdio.h>
+
+CoulangValue
+init_int__CoulangValue(int64_t int_)
+{
+	return (CoulangValue){
+		.kind = COULANG_VALUE_KIND_INT,
+		.int_ = int_
+	};
+}
+
+CoulangValue
+init_float__CoulangValue(double float_)
+{
+	return (CoulangValue){
+		.kind = COULANG_VALUE_KIND_FLOAT,
+		.float_ = float_
+	};
+}
+
+CoulangValue
+init_list__CoulangValue(CoulangValueList list)
+{
+	return (CoulangValue){
+		.kind = COULANG_VALUE_KIND_LIST,
+		.list = list
+	};
+}
+
+CoulangValue
+init_ptr__CoulangValue(void *ptr)
+{
+	return (CoulangValue){
+		.kind = COULANG_VALUE_KIND_PTR,
+		.ptr = ptr
+	};
+}
+
+CoulangValue
+init_str__CoulangValue(const String *str)
+{
+	return (CoulangValue){
+		.kind = COULANG_VALUE_KIND_STR,
+		.str = str
+	};
+}
 
 void
 deinit__CoulangValue(const CoulangValue *const self)
@@ -32,5 +80,37 @@ deinit__CoulangValue(const CoulangValue *const self)
 			break;
 		default:
 			break;
+	}
+}
+
+bool
+is_integer__CoulangValue(CoulangValue *self)
+{
+	return self->kind != COULANG_VALUE_KIND_FLOAT;
+}
+
+uintptr_t
+get_integer_as_c_value__CoulangValue(CoulangValue *self)
+{
+	switch (self->kind) {
+		case COULANG_VALUE_KIND_INT:
+			return self->int_;
+		case COULANG_VALUE_KIND_PTR:
+			return (uintptr_t)self->ptr;
+		case COULANG_VALUE_KIND_STR:
+			return (uintptr_t)self->str->buffer;
+		default:
+			COULANG_INTERPRETER_ERROR("this is not a C compatible integer");
+	}
+}
+
+double
+get_float_as_c_value__CoulangValue(CoulangValue *self)
+{
+	switch (self->kind) {
+		case COULANG_VALUE_KIND_FLOAT:
+			return self->float_;
+		default:
+			COULANG_INTERPRETER_ERROR("this is not a C compatible float");
 	}
 }

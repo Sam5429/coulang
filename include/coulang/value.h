@@ -70,50 +70,29 @@ typedef struct CoulangValue {
 	};
 } CoulangValue;
 
-static inline CoulangValue
-init_int__CoulangValue(int64_t int_)
-{
-	return (CoulangValue){
-		.kind = COULANG_VALUE_KIND_INT,
-		.int_ = int_
-	};
-}
+CoulangValue
+init_int__CoulangValue(int64_t int_);
 
-static inline CoulangValue
-init_float__CoulangValue(double float_)
-{
-	return (CoulangValue){
-		.kind = COULANG_VALUE_KIND_FLOAT,
-		.float_ = float_
-	};
-}
+CoulangValue
+init_float__CoulangValue(double float_);
 
-static inline CoulangValue
-init_list__CoulangValue(CoulangValueList list)
-{
-	return (CoulangValue){
-		.kind = COULANG_VALUE_KIND_LIST,
-		.list = list
-	};
-}
+CoulangValue
+init_list__CoulangValue(CoulangValueList list);
 
-static inline CoulangValue
-init_ptr__CoulangValue(void *ptr)
-{
-	return (CoulangValue){
-		.kind = COULANG_VALUE_KIND_PTR,
-		.ptr = ptr
-	};
-}
+CoulangValue
+init_ptr__CoulangValue(void *ptr);
 
-static inline CoulangValue
-init_str__CoulangValue(const String *str)
-{
-	return (CoulangValue){
-		.kind = COULANG_VALUE_KIND_STR,
-		.str = str
-	};
-}
+CoulangValue
+init_str__CoulangValue(const String *str);
+
+bool
+is_integer__CoulangValue(CoulangValue *self);
+
+uintptr_t
+get_integer_as_c_value__CoulangValue(CoulangValue *self);
+
+double
+get_float_as_c_value__CoulangValue(CoulangValue *self);
 
 void
 deinit__CoulangValue(const CoulangValue *const self);

@@ -20,12 +20,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef COULANG_SYMBOL_RUNNER_H
-#define COULANG_SYMBOL_RUNNER_H
+#ifndef COULANG_DATA_TYPE_H
+#define COULANG_DATA_TYPE_H
 
-#include <coulang/ast.h>
-#include <coulang/value.h>
+#ifdef __ASSEMBLER__
+COULANG_DATA_TYPE_INT=0
+COULANG_DATA_TYPE_FLOAT=1
+COULANG_DATA_TYPE_LIST=2
+COULANG_DATA_TYPE_STR=3
+COULANG_DATA_TYPE_PTR=4
+#else
+enum CoulangDataType {
+  COULANG_DATA_TYPE_INT,
+  COULANG_DATA_TYPE_FLOAT,
+  COULANG_DATA_TYPE_LIST,
+  COULANG_DATA_TYPE_STR,
+  COULANG_DATA_TYPE_PTR,
+};
+#endif
 
-extern CoulangValue run__SymbolRunner(void *addr, CoulangValue *params, size_t params_len, enum CoulangDataType data_type);
-
-#endif // COULANG_SYMBOL_RUNNER_HH
+#endif // COULANG_DATA_TYPE_H

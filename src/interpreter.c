@@ -20,11 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "coulang/ast.h"
 #include <coulang/interpreter.h>
 #include <coulang/macros.h>
 #include <coulang/scope.h>
 #include <coulang/value.h>
+#include <coulang/symbol_runner.h>
 
 #include <dlfcn.h>
 #include <stdio.h>
@@ -70,8 +70,13 @@ compute_value_from_list_expr__CoulangInterprerter(const CoulangExpr *expr);
 static CoulangValue
 compute_value_from_identifier_expr__CoulangInterpreter(const CoulangExpr *expr);
 
+static CoulangValue compute_value_from_function_symbol_call_expr__CoulangInterpreter(
+	const CoulangExpr *expr,
+    CoulangFunction *function);
+
 static CoulangValue
 compute_value_from_function_decl_call_expr__CoulangInterpreter(
+	const CoulangExpr *expr,
     CoulangFunction *function);
 
 static CoulangValue
@@ -261,35 +266,30 @@ CoulangValue compute_value_from_identifier_expr__CoulangInterpreter(
 }
 
 CoulangValue compute_value_from_function_symbol_call_expr__CoulangInterpreter(
+	const CoulangExpr *expr,
     CoulangFunction *function) {
-	switch (function->symbol.data_type) {
-		case COULANG_DATA_TYPE_INT:
-#ifdef __x86_64__
-			__asm__ __volatile__(
-				"call *%[addr]\n"
-				:
-				: [addr] "r" (function->symbol.addr)
-				: "memory"
-			);
-#else
-#error "Unknown arch"
-#endif
+	size_t params_len = expr->function_call.params_len;
+	CoulangExpr *current = expr->function_call.params;
+	CoulangValue *params = COULANG_ALLOC(sizeof(CoulangValue) * params_len);
 
-			break;
-		case COULANG_DATA_TYPE_FLOAT:
-			break;
-		case COULANG_DATA_TYPE_LIST:
-			break;
-		case COULANG_DATA_TYPE_STR:
-			break;
-		case COULANG_DATA_TYPE_PTR:
-			break;
-		default:
-			COULANG_UNREACHABLE("unknown data type");
+	for (size_t i = 0; i < params_len && current; ++i) {
+		params[i] = compute_value_from_expr__CoulangInterpreter(current);
+		current = current->next;
 	}
+
+	CoulangValue return_value = run__SymbolRunner(function->symbol.addr, params, params_len, function->symbol.data_type);
+
+	for (size_t i = 0; i < params_len; ++i) {
+		deinit__CoulangValue(&params[i]);
+	}
+
+	free(params);
+
+	return return_value;
 }
 
 CoulangValue compute_value_from_function_decl_call_expr__CoulangInterpreter(
+	const CoulangExpr *expr,
     CoulangFunction *function) {
 }
 
@@ -309,9 +309,11 @@ CoulangValue compute_value_from_function_call_expr__CoulangInterpreter(
   switch (function->kind) {
   case COULANG_FUNCTION_KIND_SYMBOL:
     return compute_value_from_function_symbol_call_expr__CoulangInterpreter(
+		expr,
         function);
   case COULANG_FUNCTION_KIND_DECL:
     return compute_value_from_function_decl_call_expr__CoulangInterpreter(
+		expr,
         function);
   default:
     COULANG_UNREACHABLE("unknown function kind");
