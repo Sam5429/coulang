@@ -36,12 +36,12 @@ init__CoulangScope()
 	return self;
 }
 
-#define GET_T_SCOPE(type) \
+#define GET_T_SCOPE(map, type) \
 	CoulangScope *current = self; \
 	type *variable = NULL; \
 \
 	while (current && !variable) { \
-		variable = get__Map(&self->variables, name); \
+		variable = get__Map(&(map), name); \
 		current = current->parent; \
 	} \
 \
@@ -51,13 +51,13 @@ init__CoulangScope()
 CoulangFunction *
 get_function__CoulangScope(CoulangScope *self, const String *name)
 {
-	GET_T_SCOPE(CoulangFunction);
+	GET_T_SCOPE(self->functions, CoulangFunction);
 }
 
 CoulangVariable *
 get_variable__CoulangScope(CoulangScope *self, const String *name)
 {
-	GET_T_SCOPE(CoulangVariable);
+	GET_T_SCOPE(self->variables, CoulangVariable);
 }
 
 #undef GET_T_SCOPE

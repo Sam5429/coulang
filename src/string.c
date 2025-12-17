@@ -27,6 +27,20 @@ init_copy__String(const String *const other)
 	return s;
 }
 
+String
+init_from_raw__String(const char *raw)
+{
+	String s = init__String();
+
+	s.len = strlen(raw);
+	s.capacity = s.len + 1;
+	s.buffer = COULANG_ALLOC(s.capacity * sizeof(char));
+	memcpy(s.buffer, raw, s.capacity);
+	s.buffer[s.len] = '\0';
+
+	return s;
+}
+
 void
 add__Strings(Strings *self, String s)
 {

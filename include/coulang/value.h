@@ -28,6 +28,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdio.h>
 
 typedef struct CoulangValue CoulangValue;
 
@@ -52,7 +53,7 @@ deinit__CoulangValueList(const CoulangValueList *const self)
 }
 
 enum CoulangValueKind {
-	COULANG_VALUE_KIND_INT,
+	COULANG_VALUE_KIND_INT = 1,
 	COULANG_VALUE_KIND_FLOAT,
 	COULANG_VALUE_KIND_LIST,
 	COULANG_VALUE_KIND_PTR,
@@ -84,6 +85,22 @@ init_ptr__CoulangValue(void *ptr);
 
 CoulangValue
 init_str__CoulangValue(const String *str);
+
+static inline bool
+is_initialized__CoulangValue(const CoulangValue *self)
+{
+	return self->kind != 0;
+}
+
+static inline bool
+is_cond_true__CoulangValue(CoulangValue *self)
+{
+	if (self->kind == COULANG_VALUE_KIND_INT) {
+		return self->int_ != 0;
+	} else {
+		COULANG_INTERPRETER_ERROR("expected integer type on condition");
+	}
+}
 
 bool
 is_integer__CoulangValue(CoulangValue *self);

@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   CoulangDeclFunctionBody body = init__CoulangDeclFunctionBody();
 
   parse_declarations__Parser(&ite, &body);
-  // run__CoulangInterpreter(&body);
+  run__CoulangInterpreter(&body);
   deinit__CoulangDeclFunctionBody(&body);
   deinit__CoulangTokens(&tokens);
 

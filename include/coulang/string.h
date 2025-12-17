@@ -46,6 +46,9 @@ init__String()
 String
 init_copy__String(const String *const other);
 
+String
+init_from_raw__String(const char *raw);
+
 void
 add__String(String *self, char c);
 
