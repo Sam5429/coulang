@@ -88,7 +88,7 @@ CoulangToken *get_current_token__TokensIterator(TokensIterator *self) {
 }
 
 CoulangToken *get_next_token__TokensIterator(TokensIterator *self) {
-  if (self->content_pos < self->content_pos - 1) {
+  if (self->content_pos + 1 < self->tokens->len) {
     return &self->tokens->buffer[self->content_pos + 1];
   }
   return &self->tokens->buffer[self->content_pos - 1];
