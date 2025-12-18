@@ -71,7 +71,7 @@ run__SymbolRunner:
 	mov QWORD PTR [rbp - 40], 0 // store counter
 	mov QWORD PTR [rbp - 48], 0 // store integer param counter
 	mov QWORD PTR [rbp - 56], 0 // store float param counter
-	mov QWORD PTR [rbp - 64], rdi
+	mov [rbp - 64], rdi
 
 	mov QWORD PTR [rip + i_param_0], 0
 	mov QWORD PTR [rip + i_param_1], 0
