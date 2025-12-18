@@ -101,6 +101,7 @@ run__SymbolRunner:
 	mov rsi, [rip + COULANG_VALUE_SIZE]
 	imul rsi, [rbp - 40]
 	add rdi, rsi
+	push rdi
 	call is_integer__CoulangValue
 
 	test rax, rax
@@ -109,6 +110,7 @@ run__SymbolRunner:
 
 .loop_i_params:
 	// NOTE: use rdi register defined into loop_params
+	pop rdi
 	call get_integer_as_c_value__CoulangValue
 	mov rsi, rax
 	mov rdi, [rbp - 48]
@@ -160,6 +162,7 @@ run__SymbolRunner:
 
 .loop_f_params:
 	// NOTE: use rdi register defined into loop_params
+	pop rdi
 	call get_float_as_c_value__CoulangValue
 	mov rdi, [rbp - 56]
 	cmp rdi, 0
