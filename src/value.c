@@ -70,19 +70,6 @@ init_str__CoulangValue(const String *str)
 	};
 }
 
-void
-deinit__CoulangValue(const CoulangValue *const self)
-{
-	switch (self->kind) {
-		case COULANG_VALUE_KIND_LIST:
-			deinit__CoulangValueList(&self->list);
-
-			break;
-		default:
-			break;
-	}
-}
-
 bool
 is_integer__CoulangValue(CoulangValue *self)
 {
@@ -112,5 +99,18 @@ get_float_as_c_value__CoulangValue(CoulangValue *self)
 			return self->float_;
 		default:
 			COULANG_INTERPRETER_ERROR("this is not a C compatible float");
+	}
+}
+
+void
+deinit__CoulangValue(const CoulangValue *const self)
+{
+	switch (self->kind) {
+		case COULANG_VALUE_KIND_LIST:
+			deinit__CoulangValueList(&self->list);
+
+			break;
+		default:
+			break;
 	}
 }

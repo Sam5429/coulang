@@ -57,18 +57,21 @@ run__SymbolRunner:
 	push rbp
 	mov rbp, rsp	
 
-	// QWORD %0: addr
-	// QWORD %1: params
-	// QWORD %2: params_len
-	// DWORD %3: data_type
+	// QWORD: return value (rdi)
+	//
+	// QWORD %0: addr (rsi)
+	// QWORD %1: params (rdx)
+	// QWORD %2: params_len (rcx)
+	// QWORD %3: data_type (r8)
 	sub rsp, 64
-	mov [rbp - 32], rdi // store %0
-	mov [rbp - 24], rsi // store %1
-	mov [rbp - 16], rdx // store %2
-	mov [rbp - 8], r10d // store %3
+	mov [rbp - 32], rsi // store %0
+	mov [rbp - 24], rdx // store %1
+	mov [rbp - 16], rcx // store %2
+	mov [rbp - 8], r8 // store %3
 	mov QWORD PTR [rbp - 40], 0 // store counter
 	mov QWORD PTR [rbp - 48], 0 // store integer param counter
 	mov QWORD PTR [rbp - 56], 0 // store float param counter
+	mov QWORD PTR [rbp - 64], rdi
 
 	mov QWORD PTR [rip + i_param_0], 0
 	mov QWORD PTR [rip + i_param_1], 0
@@ -98,7 +101,7 @@ run__SymbolRunner:
 	call is_integer__CoulangValue
 
 	test rax, rax
-	jz .loop_i_params
+	jnz .loop_i_params
 	jmp .loop_f_params
 
 .loop_i_params:
@@ -225,7 +228,7 @@ run__SymbolRunner:
 	mov rdi, [rip + i_param_0]
 	mov rsi, [rip + i_param_1]
 	mov rdx, [rip + i_param_2]
-	mov r10, [rip + i_param_3]
+	mov rcx, [rip + i_param_3]
 	mov r8, [rip + i_param_4]
 	mov r9, [rip + i_param_5]
 
@@ -238,7 +241,9 @@ run__SymbolRunner:
 	movsd xmm6, [rip + f_param_6]
 	movsd xmm7, [rip + f_param_7]
 
-	call [rbp - 16]
+	mov r10, [rbp - 32]
+	// mov r11, [r10]
+	call r10
 
 	cmp QWORD PTR [rbp - 8], COULANG_DATA_TYPE_INT
 	je .ret_int
@@ -249,17 +254,20 @@ run__SymbolRunner:
 	jmp .ret_error
 
 .ret_int:
-	mov rdi, rax
+	mov rdi, [rbp - 64]
+	mov rsi, rax
 	call init_int__CoulangValue
 	jmp .exit
 
 .ret_float:
-	mov rdi, rax
+	mov rdi, [rbp - 64]
+	mov rsi, rax
 	call init_float__CoulangValue
 	jmp .exit
 
 .ret_ptr:
-	mov rdi, rax
+	mov rdi, [rbp - 64]
+	mov rsi, rax
 	call init_ptr__CoulangValue
 	jmp .exit
 
