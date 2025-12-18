@@ -31,3 +31,6 @@ add_executable(coulang
 
 target_include_directories(coulang PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(coulang dl)
+
+add_library(rayglue SHARED ${CMAKE_SOURCE_DIR}/game/rayglue.c)
+target_link_libraries(rayglue raylib)

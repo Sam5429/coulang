@@ -20,13 +20,28 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-load "/usr/lib/libraylib.so" InitWindow int, WindowShouldClose int, CloseWindow int
+load "build/librayglue.so"
+	# void InitWindow(int width, int height, const char *title);
+	InitWindow int,
+	# bool WindowShouldClose(void);
+	WindowShouldClose int,
+	# void CloseWindow(void);
+	CloseWindow int,
+	# void BeginDrawing(void);
+	BeginDrawing int,
+	# void EndDrawing(void);
+	EndDrawing int,
+	# void ClearBackgroundRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+	ClearBackgroundRGBA int
 load "/usr/lib/libc.so.6"
 
 fn main() int {
 	InitWindow(500, 500, "Game")
 
 	while !WindowShouldClose() {
+		BeginDrawing()
+		ClearBackgroundRGBA(255, 255, 255, 255)
+		EndDrawing()
 	}
 
 	CloseWindow()
