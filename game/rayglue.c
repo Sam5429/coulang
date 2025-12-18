@@ -21,10 +21,18 @@
 // SOFTWARE.
 
 #include <raylib.h>
+#include <stdio.h>
 
 void ClearBackgroundRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
 	Color color = { .r = r, .g = g, .b = b, .a = a };
 
 	ClearBackground(color);
+}
+
+void DrawRectangleRGBA(int posX, int posY, int width, int height, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+{
+	Color color = { .r = r, .g = g, .b = b, .a = a };
+
+	DrawRectangle(posX, posY, width, height, color);
 }

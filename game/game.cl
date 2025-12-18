@@ -32,17 +32,26 @@ load "build/librayglue.so"
 	# void EndDrawing(void);
 	EndDrawing int,
 	# void ClearBackgroundRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
-	ClearBackgroundRGBA int
+	ClearBackgroundRGBA int,
+	# void DrawRectangleRGBA(int posX, int posY, int width, int height, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+	DrawRectangleRGBA int,
+	# void SetTargetFPS(int fps);
+	SetTargetFPS int
 load "/usr/lib/libc.so.6"
 
 fn main() int {
-	InitWindow(500, 500, "Game")
+	InitWindow(700, 700, "Game")
+
+	SetTargetFPS(60)
 
 	while !WindowShouldClose() {
 		BeginDrawing()
 		ClearBackgroundRGBA(255, 255, 255, 255)
+		DrawRectangleRGBA(0, 0, 100, 100, 230, 41, 55, 255)
 		EndDrawing()
 	}
 
 	CloseWindow()
+
+	return 0
 }
