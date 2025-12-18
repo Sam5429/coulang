@@ -45,6 +45,7 @@
 .section .text
 
 .global run__SymbolRunner
+.extern COULANG_VALUE_SIZE
 .extern is_integer__CoulangValue
 .extern get_integer_as_c_value__CoulangValue
 .extern get_float_as_c_value__CoulangValue
@@ -97,7 +98,9 @@ run__SymbolRunner:
 
 .loop_params:
 	mov rdi, [rbp - 24]
-	add rdi, [rbp - 40]
+	mov rsi, [rip + COULANG_VALUE_SIZE]
+	imul rsi, [rbp - 40]
+	add rdi, rsi
 	call is_integer__CoulangValue
 
 	test rax, rax
@@ -105,8 +108,7 @@ run__SymbolRunner:
 	jmp .loop_f_params
 
 .loop_i_params:
-	mov rdi, [rbp - 24]
-	add rdi, [rbp - 40]
+	// NOTE: use rdi register defined into loop_params
 	call get_integer_as_c_value__CoulangValue
 	mov rsi, rax
 	mov rdi, [rbp - 48]
@@ -157,8 +159,7 @@ run__SymbolRunner:
 	jmp .end_loop_params
 
 .loop_f_params:
-	mov rdi, [rbp - 24]
-	mov rdi, [rbp - 40]
+	// NOTE: use rdi register defined into loop_params
 	call get_float_as_c_value__CoulangValue
 	mov rdi, [rbp - 56]
 	cmp rdi, 0

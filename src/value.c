@@ -25,6 +25,8 @@
 
 #include <stdio.h>
 
+const size_t COULANG_VALUE_SIZE = sizeof(CoulangValue);
+
 CoulangValue
 init_int__CoulangValue(int64_t int_)
 {
