@@ -20,5 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+load "/usr/lib/libraylib.so" InitWindow int, WindowShouldClose int, CloseWindow int
+load "/usr/lib/libc.so.6"
+
 fn main() int {
+	InitWindow(500, 500, "Game")
+
+	while !WindowShouldClose() {
+	}
+
+	CloseWindow()
 }
