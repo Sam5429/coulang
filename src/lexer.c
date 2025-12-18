@@ -341,10 +341,10 @@ CoulangTokens lex(const char *path) {
     }
     case '#':
       // read til the end of the line to ignore the comments
-      while (current_char == '\n') {
+      while (current_char != '\n') {
         current_char = consume_char__FileIterator(&file);
       }
-      break;
+	  continue;
     case '\0':
       break;
     default:
