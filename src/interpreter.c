@@ -149,7 +149,11 @@ compute_function_body__CoulangInterpreter(CoulangExpr *called_params, CoulangDec
 static CoulangInterpreterStack interpreter_stack = {0};
 
 CoulangInterpreterCallFrame init__CoulangInterpreterCallFrame() {
-  return (CoulangInterpreterCallFrame){.scope = init__CoulangScope(),
+  CoulangScope *scope = init__CoulangScope();
+
+  scope->parent = interpreter_stack.global_scope;
+
+  return (CoulangInterpreterCallFrame){.scope = scope,
                                        .return_value = {0}};
 }
 
