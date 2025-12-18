@@ -36,8 +36,42 @@ load "build/librayglue.so"
 	# void DrawRectangleRGBA(int posX, int posY, int width, int height, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 	DrawRectangleRGBA int,
 	# void SetTargetFPS(int fps);
-	SetTargetFPS int
-load "/usr/lib/libc.so.6"
+	SetTargetFPS int,
+    # bool IsKeyPressed(int key);
+    IsKeyPressed int
+load "/usr/lib/libc.so.6" puts int
+
+val KEY_RIGHT int = 262
+val KEY_LEFT int = 263
+val KEY_DOWN int = 264
+val KEY_UP int = 265
+
+fn draw() int {
+	ClearBackgroundRGBA(255, 255, 255, 255)
+	DrawRectangleRGBA(0, 0, 100, 100, 230, 41, 55, 255)
+
+	return 0
+}
+
+fn handle_events() int {
+    if IsKeyPressed(KEY_RIGHT) {
+        puts("Right Pressed!!")
+    }
+
+    if IsKeyPressed(KEY_LEFT) {
+        puts("Left Pressed!!")
+    }
+
+    if IsKeyPressed(KEY_DOWN) {
+        puts("Down Pressed!!")
+    }
+
+    if IsKeyPressed(KEY_UP) {
+        puts("Up Pressed!!")
+    }
+
+	return 0
+}
 
 fn main() int {
 	InitWindow(700, 700, "Game")
@@ -45,9 +79,10 @@ fn main() int {
 	SetTargetFPS(60)
 
 	while !WindowShouldClose() {
+		handle_events()
+
 		BeginDrawing()
-		ClearBackgroundRGBA(255, 255, 255, 255)
-		DrawRectangleRGBA(0, 0, 100, 100, 230, 41, 55, 255)
+			draw()
 		EndDrawing()
 	}
 
