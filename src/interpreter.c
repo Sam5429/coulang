@@ -52,6 +52,10 @@ static CoulangInterpreterStack init__CoulangInterpreterStack();
 static void
 deinit__CoulangInterpreterStack(const CoulangInterpreterStack *const self);
 
+static CoulangVariable *find_variable__CoulangInterpreter(CoulangScope *current_scope, const String *identifier);
+
+static CoulangValue compute_value_from_assign_expr__CoulangInterpreter(const CoulangExpr *expr);
+
 static CoulangValue compute_value_from_binary_int_expr__CoulangInterpreter(
     enum CoulangExprBinaryKind kind, int64_t left, int64_t right);
 
@@ -181,6 +185,38 @@ void deinit__CoulangInterpreterStack(
   free(self->call_frames);
 }
 
+CoulangVariable *find_variable__CoulangInterpreter(CoulangScope *current_scope, const String *identifier)
+{
+	CoulangVariable *variable =
+      get_variable__CoulangScope(current_scope, identifier);
+
+	if (!variable) {
+		COULANG_INTERPRETER_ERROR("cannot found variable: %s",
+                              identifier->buffer);
+	}
+
+	return variable;
+}
+
+CoulangValue compute_value_from_assign_expr__CoulangInterpreter(const CoulangExpr *expr)
+{
+	CoulangExpr *left = expr->binary.left;
+
+	if (left->kind != COULANG_EXPR_KIND_IDENTIFIER) {
+		COULANG_INTERPRETER_ERROR("expected identifier on left");
+	}
+
+	CoulangScope *current_scope = CURRENT_SCOPE();
+	CoulangVariable *variable = find_variable__CoulangInterpreter(current_scope, left->identifier);
+	CoulangValue old_variable_value = variable->value;
+
+	variable->value = compute_value_from_expr__CoulangInterpreter(expr->binary.right);
+
+	deinit__CoulangValue(&old_variable_value);
+
+	return init_int__CoulangValue(0);
+}
+
 #define COMPUTE_VALUE_FROM_BINARY_NUMBER_EXPR(kind, type, left, right)         \
   switch (kind) {                                                              \
   case COULANG_EXPR_BINARY_KIND_ADD:                                           \
@@ -227,6 +263,10 @@ compute_value_from_binary_expr__CoulangInterpreter(const CoulangExpr *expr) {
       compute_value_from_expr__CoulangInterpreter(expr->binary.left);
   CoulangValue right =
       compute_value_from_expr__CoulangInterpreter(expr->binary.right);
+
+  if (expr->binary.kind == COULANG_EXPR_BINARY_KIND_ASSIGN) {
+	  return compute_value_from_assign_expr__CoulangInterpreter(expr);
+  }
 
   if ((left.kind ^ right.kind) == 0) {
     CoulangValue res;
@@ -302,13 +342,7 @@ compute_value_from_list_expr__CoulangInterprerter(const CoulangExpr *expr) {
 CoulangValue compute_value_from_identifier_expr__CoulangInterpreter(
     const CoulangExpr *expr) {
   CoulangScope *current_scope = CURRENT_SCOPE();
-  CoulangVariable *variable =
-      get_variable__CoulangScope(current_scope, expr->identifier);
-
-  if (!variable) {
-    COULANG_INTERPRETER_ERROR("cannot found variable: %s",
-                              expr->identifier->buffer);
-  }
+  CoulangVariable *variable = find_variable__CoulangInterpreter(current_scope, expr->identifier);
 
   return variable->value;
 }

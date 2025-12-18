@@ -38,7 +38,9 @@ static enum CoulangExprBinaryKind
         [COULANG_TOKEN_KIND_RSHIFT] = COULANG_EXPR_BINARY_KIND_GREATER,
         [COULANG_TOKEN_KIND_RSHIFT_EQ] = COULANG_EXPR_BINARY_KIND_GREATER_EQ,
         [COULANG_TOKEN_KIND_EQ_EQ] = COULANG_EXPR_BINARY_KIND_EQ,
-        [COULANG_TOKEN_KIND_BANG_EQ] = COULANG_EXPR_BINARY_KIND_NOT_EQ};
+        [COULANG_TOKEN_KIND_BANG_EQ] = COULANG_EXPR_BINARY_KIND_NOT_EQ,
+		[COULANG_TOKEN_KIND_EQ] = COULANG_EXPR_BINARY_KIND_ASSIGN
+	};
 
 static bool is_done__CoulangToken(TokensIterator *self);
 
@@ -56,6 +58,8 @@ static CoulangExpr *parse_list(TokensIterator *ite);
 static CoulangExpr *parse_primary_expr(TokensIterator *ite);
 
 static CoulangExpr *parse_unary_expr(TokensIterator *ite);
+
+static CoulangExpr *parse_assign_expr(TokensIterator *ite, CoulangExpr *left);
 
 static CoulangExpr *parse_equality_expr(TokensIterator *ite, CoulangExpr *left);
 
@@ -285,6 +289,17 @@ CoulangExpr *parse_unary_expr(TokensIterator *ite) {
                                                                                \
   current_token = get_current_token__TokensIterator(ite);
 
+CoulangExpr *parse_assign_expr(TokensIterator *ite, CoulangExpr *left)
+{
+  CoulangToken *current_token = get_current_token__TokensIterator(ite);
+
+  while (current_token->kind == COULANG_TOKEN_KIND_EQ) {
+    PARSE_RIGHT();
+  }
+
+  return parse_equality_expr(ite, left);
+}
+
 CoulangExpr *parse_equality_expr(TokensIterator *ite, CoulangExpr *left) {
   CoulangToken *current_token = get_current_token__TokensIterator(ite);
 
@@ -335,7 +350,7 @@ CoulangExpr *parse_term_expr(TokensIterator *ite, CoulangExpr *left) {
 #undef PARSE_RIGHT
 
 CoulangExpr *parse_binary_expr(TokensIterator *ite, CoulangExpr *left) {
-  CoulangExpr *binary_expr = parse_equality_expr(ite, left);
+  CoulangExpr *binary_expr = parse_assign_expr(ite, left);
 
   return tokens_to_binary_kind[get_current_token__TokensIterator(ite)->kind]
              ? parse_binary_expr(ite, binary_expr)
@@ -346,24 +361,8 @@ CoulangExpr *parse_expr(TokensIterator *ite) {
   CoulangExpr *expr = parse_primary_expr(ite);
   CoulangToken *current = get_current_token__TokensIterator(ite);
 
-  switch (current->kind) {
-  case COULANG_TOKEN_KIND_PLUS:
-  case COULANG_TOKEN_KIND_MINUS:
-  case COULANG_TOKEN_KIND_STAR:
-  case COULANG_TOKEN_KIND_SLASH:
-  case COULANG_TOKEN_KIND_MODULO:
-  case COULANG_TOKEN_KIND_EQ:
-  case COULANG_TOKEN_KIND_EQ_EQ:
-  case COULANG_TOKEN_KIND_BANG_EQ:
-  case COULANG_TOKEN_KIND_LSHIFT:
-  case COULANG_TOKEN_KIND_RSHIFT:
-  case COULANG_TOKEN_KIND_LSHIFT_EQ:
-  case COULANG_TOKEN_KIND_RSHIFT_EQ:
-    expr = parse_binary_expr(ite, expr);
-
-    break;
-  default:
-    break;
+  if (tokens_to_binary_kind[current->kind]) {
+	  expr = parse_binary_expr(ite, expr);
   }
 
   return expr;
