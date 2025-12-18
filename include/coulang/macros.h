@@ -33,7 +33,7 @@
 	exit(1);
 
 #define COULANG_INTERPRETER_ERROR(message, ...)                                \
-  fprintf(stderr, "Error:" message "\n", ##__VA_ARGS__);                       \
+  fprintf(stderr, "Error: " message "\n", ##__VA_ARGS__);                       \
   exit(1);
 
 #define COULANG_F_ALLOC(f, ...)                                                \
