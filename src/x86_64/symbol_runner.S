@@ -242,7 +242,6 @@ run__SymbolRunner:
 	movsd xmm7, [rip + f_param_7]
 
 	mov r10, [rbp - 32]
-	// mov r11, [r10]
 	call r10
 
 	cmp QWORD PTR [rbp - 8], COULANG_DATA_TYPE_INT
