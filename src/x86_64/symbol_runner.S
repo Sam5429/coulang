@@ -69,7 +69,7 @@ run__SymbolRunner:
 	mov [rbp - 24], rdx // store %1
 	mov [rbp - 16], rcx // store %2
 	mov [rbp - 8], r8 // store %3
-	mov QWORD PTR [rbp - 40], 0 // store counter
+	mov QWORD PTR [rbp - 40], rcx // store counter
 	mov QWORD PTR [rbp - 48], 0 // store integer param counter
 	mov QWORD PTR [rbp - 56], 0 // store float param counter
 	mov [rbp - 64], rdi
@@ -91,40 +91,41 @@ run__SymbolRunner:
 	mov QWORD PTR [rip + f_param_7], 0
 
 .loop_cond_params:
-	mov rdi, [rbp - 16]
-	cmp QWORD PTR [rbp - 40], rdi
-	jl .loop_params
-	jmp .call_addr
+	mov rsi, [rbp - 40]
+
+	test rsi, rsi
+	jz .call_addr
 
 .loop_params:
 	mov rdi, [rbp - 24]
-	mov rsi, [rip + COULANG_VALUE_SIZE]
-	imul rsi, [rbp - 40]
+	mov rsi, [rbp - 40]
+	dec rsi
+	imul rsi, [rip + COULANG_VALUE_SIZE]
 	add rdi, rsi
 	push rdi
 	call is_integer__CoulangValue
 
 	test rax, rax
-	jnz .loop_i_params
-	jmp .loop_f_params
+	jz .loop_f_params
 
 .loop_i_params:
 	// NOTE: use rdi register defined into loop_params
 	pop rdi
 	call get_integer_as_c_value__CoulangValue
 	mov rsi, rax
-	mov rdi, [rbp - 48]
-	cmp rdi, 0
-	je .i_param_0
+	mov rdi, [rbp - 16]
+	sub rdi, [rbp - 48]
 	cmp rdi, 1
-	je .i_param_1
+	je .i_param_0
 	cmp rdi, 2
-	je .i_param_2
+	je .i_param_1
 	cmp rdi, 3
-	je .i_param_3
+	je .i_param_2
 	cmp rdi, 4
-	je .i_param_4
+	je .i_param_3
 	cmp rdi, 5
+	je .i_param_4
+	cmp rdi, 6
 	je .i_param_5
 	jmp .other_i_param
 
@@ -164,22 +165,23 @@ run__SymbolRunner:
 	// NOTE: use rdi register defined into loop_params
 	pop rdi
 	call get_float_as_c_value__CoulangValue
-	mov rdi, [rbp - 56]
-	cmp rdi, 0
-	je .f_param_0
+	mov rdi, [rbp - 16]
+	sub rdi, [rbp - 56]
 	cmp rdi, 1
-	je .f_param_1
+	je .f_param_0
 	cmp rdi, 2
-	je .f_param_2
+	je .f_param_1
 	cmp rdi, 3
-	je .f_param_3
+	je .f_param_2
 	cmp rdi, 4
-	je .f_param_4
+	je .f_param_3
 	cmp rdi, 5
-	je .f_param_5
+	je .f_param_4
 	cmp rdi, 6
-	je .f_param_6
+	je .f_param_5
 	cmp rdi, 7
+	je .f_param_6
+	cmp rdi, 8
 	je .f_param_7
 	jmp .other_f_param
 
@@ -225,7 +227,7 @@ run__SymbolRunner:
 	jmp .end_loop_params
 
 .end_loop_params:
-	inc QWORD PTR [rbp - 40]
+	dec QWORD PTR [rbp - 40]
 	jmp .loop_cond_params
 
 .call_addr:
