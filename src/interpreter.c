@@ -669,10 +669,9 @@ void coulang_stmt__CoulangInterpreter(const CoulangStmt *stmt) {
 void push_call_frame__CoulangInterpreter(
     CoulangExpr *called_params, CoulangDeclFunctionParam *decl_params) {
   if (interpreter_stack.call_frames_len <
-      interpreter_stack.call_frames_capacity) {
-    interpreter_stack.call_frames[interpreter_stack.call_frames_len++] =
-        init__CoulangInterpreterCallFrame();
-    CoulangScope *current_scope = CURRENT_SCOPE();
+      interpreter_stack.call_frames_capacity) { 
+	CoulangInterpreterCallFrame call_frame = init__CoulangInterpreterCallFrame();
+    CoulangScope *current_scope = call_frame.scope;
     CoulangExpr *current_called_param = called_params;
     CoulangDeclFunctionParam *current_decl_param = decl_params;
 
@@ -691,6 +690,8 @@ void push_call_frame__CoulangInterpreter(
     if (current_called_param || current_decl_param) {
       COULANG_INTERPRETER_ERROR("missing parameter");
     }
+
+	interpreter_stack.call_frames[interpreter_stack.call_frames_len++] = call_frame;
   } else {
     COULANG_INTERPRETER_ERROR("call frame overflow");
   }
