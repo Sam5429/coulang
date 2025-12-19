@@ -39,7 +39,6 @@ load "build/librayglue.so"
 	SetTargetFPS int,
     # bool IsKeyPressed2(int key);
 	IsKeyPressed2 int
-load "/usr/lib/libc.so.6" puts int, printf int
 
 val KEY_RIGHT int = 262
 val KEY_LEFT int = 263
@@ -55,8 +54,6 @@ val plane_y int = window_height - plane_height
 
 fn draw() int {
 	ClearBackgroundRGBA(0, 0, 0, 255)
-	printf("x: %d, y: %d", plane_x, plane_y)
-	puts("")
 	DrawRectangleRGBA(plane_x, plane_y, plane_width, plane_height, 230, 41, 55, 255)
 
 	return 0
