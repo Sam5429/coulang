@@ -106,6 +106,22 @@ init__CoulangExprFunctionCall(String *function_name, struct CoulangExpr *params,
 
 void deinit__CoulangExprFunctionCall(const CoulangExprFunctionCall *const self);
 
+typedef struct {
+	CoulangExpr *list;
+	CoulangExpr *index;
+} CoulangExprListAccess;
+
+static inline CoulangExprListAccess
+init__CoulangExprListAccess(CoulangExpr *list, CoulangExpr *index)
+{
+	return (CoulangExprListAccess){
+		.list = list,
+		.index = index
+	};
+}
+
+void deinit__CoulangExprListAccess(const CoulangExprListAccess *const self);
+
 enum CoulangExprKind {
   COULANG_EXPR_KIND_BINARY,
   COULANG_EXPR_KIND_UNARY,
@@ -116,6 +132,7 @@ enum CoulangExprKind {
   COULANG_EXPR_KIND_GROUPING,
   COULANG_EXPR_KIND_IDENTIFIER,
   COULANG_EXPR_KIND_FUNCTION_CALL,
+  COULANG_EXPR_KIND_LIST_ACCESS,
 };
 
 typedef struct CoulangExpr {
@@ -131,6 +148,7 @@ typedef struct CoulangExpr {
     CoulangExpr *grouping;
     const String *identifier;
     CoulangExprFunctionCall function_call;
+	CoulangExprListAccess list_access;
   };
 } CoulangExpr;
 
@@ -152,6 +170,8 @@ CoulangExpr *init_identifier__CoulangExpr(const String *identifier);
 
 CoulangExpr *
 init_functin_call__CoulangExpr(CoulangExprFunctionCall function_call);
+
+CoulangExpr *init_list_access__CoulangExpr(CoulangExprListAccess list_access);
 
 static inline void add__CoulangExpr(CoulangExpr *self, CoulangExpr **head,
                                     CoulangExpr **tail) {

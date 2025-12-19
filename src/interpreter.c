@@ -93,6 +93,9 @@ compute_value_from_function_decl_call_expr__CoulangInterpreter(
 static CoulangValue compute_value_from_function_call_expr__CoulangInterpreter(
     const CoulangExpr *expr);
 
+static CoulangValue compute_value_from_list_access_expr__CoulangInterpreter(
+    const CoulangExpr *expr);
+
 static CoulangValue
 compute_value_from_expr__CoulangInterpreter(const CoulangExpr *expr);
 
@@ -422,6 +425,33 @@ CoulangValue compute_value_from_function_call_expr__CoulangInterpreter(
   }
 }
 
+CoulangValue compute_value_from_list_access_expr__CoulangInterpreter(
+    const CoulangExpr *expr)
+{
+	// NOTE: If you try to free list_value, it will end up with something wrong.
+	CoulangValue list_value = compute_value_from_expr__CoulangInterpreter(expr->list_access.list);
+
+	if (list_value.kind != COULANG_VALUE_KIND_LIST) {
+		COULANG_INTERPRETER_ERROR("expected a list value");
+	}
+
+	CoulangValue index_value = compute_value_from_expr__CoulangInterpreter(expr->list_access.index);
+
+	if (index_value.kind != COULANG_VALUE_KIND_INT) {
+		COULANG_INTERPRETER_ERROR("expected integer as index of list access");
+	}
+
+	if (index_value.int_ >= list_value.list.len) {
+		COULANG_INTERPRETER_ERROR("index out of bounds");
+	}
+
+	CoulangValue acceded_value = list_value.list.buffer[index_value.int_];
+
+	deinit__CoulangValue(&index_value);
+
+	return acceded_value;
+}
+
 CoulangValue
 compute_value_from_expr__CoulangInterpreter(const CoulangExpr *expr) {
   switch (expr->kind) {
@@ -443,6 +473,8 @@ compute_value_from_expr__CoulangInterpreter(const CoulangExpr *expr) {
     return compute_value_from_identifier_expr__CoulangInterpreter(expr);
   case COULANG_EXPR_KIND_FUNCTION_CALL:
     return compute_value_from_function_call_expr__CoulangInterpreter(expr);
+  case COULANG_EXPR_KIND_LIST_ACCESS:
+	return compute_value_from_list_access_expr__CoulangInterpreter(expr);
   default:
     COULANG_UNREACHABLE("unknown expr kind");
   }

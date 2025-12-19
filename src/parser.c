@@ -55,6 +55,10 @@ static enum CoulangDataType parse_data_type__Parser(TokensIterator *ite);
 
 static CoulangExpr *parse_list(TokensIterator *ite);
 
+static CoulangExpr *parse_function_call(TokensIterator *ite, String *function_id);
+
+static CoulangExpr *parse_list_access_expr(TokensIterator *ite, CoulangExpr *list);
+
 static CoulangExpr *parse_primary_expr(TokensIterator *ite);
 
 static CoulangExpr *parse_unary_expr(TokensIterator *ite);
@@ -210,6 +214,17 @@ CoulangExpr *parse_function_call(TokensIterator *ite, String *function_id) {
       init__CoulangExprFunctionCall(&name_tok->string, head, params_len));
 }
 
+CoulangExpr *parse_list_access_expr(TokensIterator *ite, CoulangExpr *list)
+{
+	consume_token__TokensIterator(ite);
+
+	CoulangExpr *index = parse_expr(ite);
+
+	expect_token(COULANG_TOKEN_KIND_RHOOK, ite);
+
+	return init_list_access__CoulangExpr(init__CoulangExprListAccess(list, index));
+}
+
 CoulangExpr *parse_primary_expr(TokensIterator *ite) {
   CoulangToken *current_token = get_current_token__TokensIterator(ite);
   CoulangExpr *expr = NULL;
@@ -360,6 +375,11 @@ CoulangExpr *parse_binary_expr(TokensIterator *ite, CoulangExpr *left) {
 CoulangExpr *parse_expr(TokensIterator *ite) {
   CoulangExpr *expr = parse_primary_expr(ite);
   CoulangToken *current = get_current_token__TokensIterator(ite);
+
+  if (current->kind == COULANG_TOKEN_KIND_LHOOK) {
+	  expr = parse_list_access_expr(ite, expr);
+	  current = get_current_token__TokensIterator(ite);
+  }
 
   if (tokens_to_binary_kind[current->kind]) {
 	  expr = parse_binary_expr(ite, expr);

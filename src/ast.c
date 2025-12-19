@@ -58,6 +58,12 @@ void deinit__CoulangExprFunctionCall(
   }
 }
 
+void deinit__CoulangExprListAccess(const CoulangExprListAccess *const self)
+{
+	deinit__CoulangExpr(self->list);
+	deinit__CoulangExpr(self->index);
+}
+
 #define INIT_EXPR(k, ...)                                                      \
   CoulangExpr *expr = COULANG_ALLOC(sizeof(CoulangExpr));                      \
   *expr = (CoulangExpr){.kind = (k), __VA_ARGS__};                             \
@@ -100,6 +106,11 @@ init_functin_call__CoulangExpr(CoulangExprFunctionCall function_call) {
   INIT_EXPR(COULANG_EXPR_KIND_FUNCTION_CALL, .function_call = function_call);
 }
 
+CoulangExpr *init_list_access__CoulangExpr(CoulangExprListAccess list_access)
+{
+  INIT_EXPR(COULANG_EXPR_KIND_LIST_ACCESS, .list_access = list_access);
+}
+
 #undef INIT_EXPR
 
 void deinit__CoulangExpr(CoulangExpr *self) {
@@ -125,6 +136,10 @@ void deinit__CoulangExpr(CoulangExpr *self) {
     deinit__CoulangExprFunctionCall(&self->function_call);
 
     break;
+  case COULANG_EXPR_KIND_LIST_ACCESS:
+	deinit__CoulangExprListAccess(&self->list_access);
+
+	break;
   default:
     break;
   }
