@@ -176,7 +176,6 @@ fn spawn_asteroid(positionX int, positionY int) int {
 
 	if indx_free != (-1) {
 		asteroids[indx_free] = InitAsteroid(positionX, positionY, 3)
-		printf("je spawn un aste : %d %d qui a %d hp\n", positionX, positionY, GetHP_Asteroid(asteroids[indx_free]))
 		return 0
 	}
 	return -1
@@ -184,7 +183,7 @@ fn spawn_asteroid(positionX int, positionY int) int {
 
 # create a line of asteroid
 fn generate_asteroid() int {
-	val pos_x int = -5
+	val pos_x int = 0
 	while pos_x < window_width {
 		spawn_asteroid(pos_x, 0)
 		pos_x = (pos_x + (asteroid_width-2))
@@ -222,16 +221,49 @@ fn del_asteroid() int {
 	}
 }
 
-#fn tcheck_colision() int {
-#	val i int = 0
-#	while i<asteroids_num {
-#		val asteroidPosX = GetPositionX_Asteroid(asteroids[i])
-#		val asteroidPosY = GetPositionY_Asteroid(asteroids[i])
-#		if  {
+fn tcheck_colision() int {
+	val i int = 0
+	while i<asteroids_num {
+		if asteroids[i] != 0 {
+			val asteroidPosX int = GetPositionX_Asteroid(asteroids[i])
+			val asteroidPosY int = GetPositionY_Asteroid(asteroids[i])
+			# colision avec le vaisseau
+			if (asteroidPosX < (ship_x + ship_width)) {
+				if (ship_x < (asteroidPosX + asteroid_width)) {
+					if (asteroidPosY < (ship_y + ship_height)) {
+						if (ship_y < (asteroidPosY + asteroid_height)) {
+							DeinitAsteroid(asteroids[i])
+							asteroids[i] = 0
+							printf("ship took a hit\n")
+						}
+					}
+				}
+			}
 
-#		}
-#	}
-#}
+			# colision avec les missiles
+			val j int = 0
+			while j<missiles_num {
+				if missiles[j] != 0 {
+					val missilePosX int = GetPositionX_Missile(missiles[j])
+					val missilePosY int = GetPositionY_Missile(missiles[j])
+					if (asteroidPosX < (missilePosX + missile_width)) {
+						if (missilePosX < (asteroidPosX + asteroid_width)) {
+							if (asteroidPosY < (missilePosY + missile_height)) {
+								if (missilePosY < (asteroidPosY + asteroid_height)) {
+									TakeHit_Asteroid(asteroids[i])
+									DeinitMissile(missiles[j])
+									missiles[j] = 0
+								}
+							}
+						}
+					}
+				}
+				j = (j+1)
+			}
+		}
+		i = (i+1)
+	}
+}
 
 fn drawShip() int {
 	ClearBackgroundRGBA(0, 0, 0, 255)
@@ -295,7 +327,6 @@ fn handle_events() int {
 
     if IsKeyPressed2(KEY_SPACE) {
 		spawn_missile((ship_x + (ship_width/2)), ship_y - 20)
-		TakeHit_Asteroid(asteroids[0])
 	}
 
 	return 0
@@ -333,7 +364,7 @@ fn main() int {
 
 		generate_asteroid()
 
-		#tcheck_colision()
+		tcheck_colision()
 
 		del_missiles()
 		del_asteroid()
