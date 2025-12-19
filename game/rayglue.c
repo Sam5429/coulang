@@ -20,8 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <coulang/macros.h>
+
 #include <raylib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 void ClearBackgroundRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
@@ -43,4 +46,26 @@ void DrawRectangleRGBA(int posX, int posY, int width, int height, unsigned char 
 bool IsKeyPressed2(int key)
 {
 	return IsKeyPressed(key) || IsKeyPressedRepeat(key);
+}
+
+Texture2D *LoadTexturePtr(const char *fileName)
+{
+	Texture2D *texture_ptr = COULANG_ALLOC(sizeof(Texture2D));
+
+	*texture_ptr = LoadTexture(fileName);
+
+	return texture_ptr;
+}
+
+void UnloadTexturePtr(Texture2D *texture)
+{
+	UnloadTexture(*texture);
+	free(texture);
+}
+
+void DrawTexturePtr(Texture2D *texture, int posX, int posY, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+{
+	Color color = { .r = r, .g = g, .b = b, .a = a };
+
+	DrawTexture(*texture, posX, posY, color);
 }
