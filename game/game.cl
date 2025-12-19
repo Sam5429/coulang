@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-load "build/librayglue.so"
+load "librayglue.so"
 	# void InitWindow(int width, int height, const char *title);
 	InitWindow int,
 	# bool WindowShouldClose(void);
@@ -47,8 +47,8 @@ val KEY_UP int = 265
 
 val window_width int = 700
 val window_height int = 700
-val plane_width int = 100
-val plane_height int = 100
+val plane_width int = 30
+val plane_height int = 30
 val plane_x int = 0
 val plane_y int = window_height - plane_height
 

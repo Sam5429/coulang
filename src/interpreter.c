@@ -452,7 +452,7 @@ void handle_function_decl__CoulangInterpreter(const CoulangDecl *decl) {
 
 #include <unistd.h>
 String search_lib(const char *lib_name) {
-  char *list_lib[] = {"/lib/", "/usr/lib/", "/lib/x86_64-linux-gnu/"};
+  char *list_lib[] = {"./build/", "/lib/", "/usr/lib/", "/lib/x86_64-linux-gnu/"};
 
   for (size_t i = 0; i < sizeof(list_lib) / sizeof(*list_lib); i++) {
     DIR *dir;

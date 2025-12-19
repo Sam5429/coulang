@@ -1,4 +1,4 @@
-load "/usr/lib/libc.so.6" printf int
+load "libc" printf int
 
 fn main() int {
 	printf("Hello")
