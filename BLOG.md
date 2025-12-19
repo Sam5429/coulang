@@ -1,30 +1,106 @@
 # Blog
 
-## Plan
+## Initial thought
 
-### Interpreter
+We have, only 7 days to create a programming language and a game with
+the language we created. We think than the most reasonable thing to do
+is to create a language with a limited number of features. So, if we
+want to finish this jam with a language and a game, we'll need a
+maximum of 3.5 days for the language and 3.5 days for the game,
+in order to make a game that's somewhat good.
 
-- 1. Lexer -> create the token
-- 2. Parser -> convert token to abstract syntaxt tree
-- 3. Sementic checker -> tcheck the life time, type
-- 4. VM -> run the code (create a stack and push function on it)
+Personally (@ArthurPV), I really want to create a language with as
+little dependency as possible, because otherwise it's no fun. It
+would be too easy to create a language with LLVM, plus I've
+already created several with it.
 
-## 14th~15th December
+So, to learn new things and make it fun, we decided to create an
+interpreted language that could call C functions by loading dynamic
+libraries with
+[dl](https://man7.org/linux/man-pages/man3/dlopen.3.html].
 
-### Objetif
+So here's the plan:
 
-- Create the syntax
-- Create compilation error meme
-- Start the lexer and the parser
+- Lexer
+- Parser
+- Interpreter
 
-### Achievement
+That's basically all we need. In addition, there is a small additional
+difficulty: we are both university students and we have our final exams
+during the jam, so we won't really have a whole week. But who cares?
+The goal is just to have fun and stay up all night as much as possible.
 
-We want to start with a simple language with basic operators for logic, such as `+`, `-`, `if`, `else`, `while`, and functions.
+## 14th December night and 15th December early in the morning
 
-To begin, we agreed on the necessary components and created some useful macros, tokens to represent our words, and a lexer that converts the code into tokens. The lexer can produce errors if it cannot convert the text into a token and provides the position of the error.
+We started the jam around 8 p.m, and we basically created the lexer in
+about four hours of coding and lively discussion. Honestly, there's
+not much to say. We created a fairly standard lexer that any basic
+language could have. By the way, for those who don't know what a lexer
+is, it's basically a program that takes a stream of characters (e.g.,
+the contents of a file) and converts them into tokens.
 
-After that, we created an abstract syntax tree (AST) to link our nodes. However, we encountered a problem when the nodes were incorrectly linked together.
+While @Sam5429 takes care of the lexer, I'll take care of the AST to
+save some time, so that when he's done, we can start the parser right
+away.
 
-## todo 
+It took me about 3 hours, and all I can say is that doing an AST for
+that long was horrible, boring, and repetitive.
 
-add the position with the token so we can know were the error occure in the parser
+We basically tested/debug our lexer for a maximum of 1 hour, and then
+we moved on to the parser directly.
+
+We started working on the parser structure, but we decided to stop
+[here](https://github.com/Sam5429/coulang/commit/65d42344fac7ff479ee33347be473b3b145fb1fd)
+because it was almost 7 a.m.
+
+## 15th December afternoon and night 
+
+During the afternoon, I pretty much finished the entire parser. Again,
+there's not much to say about it; it's a fairly standard parser, with
+no tricks that are too complicated to understand (except that I may
+have messed up the operation precedence, but we'll try to fix that
+later).
+
+Then I started implementing things like `scope` so that I could
+finish implementing the interpreter the next day. We've finished
+the day [here](https://github.com/Sam5429/coulang/commit/5bb656131a8ea1fb964ea8828248518654afe161).
+
+## 16th December
+
+On this day, @Sam5429 focused mainly on improving the error system, so
+that it would be reasonably acceptable and understandable (location and
+all that stuff).
+
+For my part, I worked quite a bit on the interpreter part. I had pretty
+much finished it, all that was left was to manage the symbol call part,
+loaded from `dl`. And that's when things started to get a little more
+complicated. The problem I encountered is that in C, when you load a
+symbol with `dl`, you do the following:
+
+```c
+void *handle = dlopen("yourlib.so");
+
+if (!handle) {
+    exit(1);
+}
+
+void (*foo)(size_t) = dlsym(handle, "foo");
+
+if (!foo) {
+    exit(1);
+}
+
+void *p = foo(1)
+```
+
+The problem lies in the penultimate line. To call the `foo` function,
+we do a cast. And obviously, in C, at least as far as I know, it is
+impossible to do the following if `foo` is a `void*`: `foo(...)`.
+
+So, if it's impossible to do in C, it's possible to do it in Assembly
+language. Yeah I know... but that will be for another day. We've
+finished the day [here](https://github.com/Sam5429/coulang/commit/8d002204a72b2f425a29a689dc01fac5f480c4f3).
+
+## 17th December
+
+...
