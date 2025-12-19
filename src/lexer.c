@@ -105,7 +105,7 @@ void restore_char__FileIteratro(FileIterator *self) {
 
 // return -1 if there is no next char
 char get_next_char__FileIterator(FileIterator *self) {
-  if (self->content_pos < self->size - 2) {
+  if (self->content_pos < self->size - 1) {
     return self->content[self->content_pos + 1];
   }
   return -1;
@@ -235,7 +235,7 @@ CoulangTokens lex(const char *path) {
       token = init__CoulangToken(COULANG_TOKEN_KIND_RHOOK, file.code_pos);
       break;
     case '=':
-      if (get_next_char__FileIterator(&file) == '=') {
+      if (get_current_char__FileIterator(&file) == '=') {
         Position temp = file.code_pos;
         consume_char__FileIterator(&file);
         token = init__CoulangToken(COULANG_TOKEN_KIND_EQ_EQ, temp);
@@ -244,7 +244,7 @@ CoulangTokens lex(const char *path) {
       token = init__CoulangToken(COULANG_TOKEN_KIND_EQ, file.code_pos);
       break;
     case '!':
-      if (get_next_char__FileIterator(&file) == '=') {
+      if (get_current_char__FileIterator(&file) == '=') {
         Position temp = file.code_pos;
         consume_char__FileIterator(&file);
         token = init__CoulangToken(COULANG_TOKEN_KIND_BANG_EQ, temp);
@@ -253,7 +253,7 @@ CoulangTokens lex(const char *path) {
       token = init__CoulangToken(COULANG_TOKEN_KIND_BANG, file.code_pos);
       break;
     case '<':
-      if (get_next_char__FileIterator(&file) == '=') {
+      if (get_current_char__FileIterator(&file) == '=') {
         Position temp = file.code_pos;
         consume_char__FileIterator(&file);
         token = init__CoulangToken(COULANG_TOKEN_KIND_LSHIFT_EQ, temp);
@@ -262,7 +262,7 @@ CoulangTokens lex(const char *path) {
       token = init__CoulangToken(COULANG_TOKEN_KIND_LSHIFT, file.code_pos);
       break;
     case '>':
-      if (get_next_char__FileIterator(&file) == '=') {
+      if (get_current_char__FileIterator(&file) == '=') {
         Position temp = file.code_pos;
         consume_char__FileIterator(&file);
         token = init__CoulangToken(COULANG_TOKEN_KIND_RSHIFT_EQ, temp);
@@ -344,7 +344,7 @@ CoulangTokens lex(const char *path) {
       while (current_char != '\n') {
         current_char = consume_char__FileIterator(&file);
       }
-	  continue;
+      continue;
     case '\0':
       break;
     default:
