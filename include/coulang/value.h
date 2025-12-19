@@ -53,11 +53,11 @@ deinit__CoulangValueList(const CoulangValueList *const self)
 }
 
 enum CoulangValueKind {
-	COULANG_VALUE_KIND_INT = 1,
-	COULANG_VALUE_KIND_FLOAT,
-	COULANG_VALUE_KIND_LIST,
-	COULANG_VALUE_KIND_PTR,
-	COULANG_VALUE_KIND_STR,
+	COULANG_VALUE_KIND_INT = 1 << 1,
+	COULANG_VALUE_KIND_FLOAT = 1 << 2,
+	COULANG_VALUE_KIND_LIST = 1 << 3,
+	COULANG_VALUE_KIND_PTR = 1 << 4,
+	COULANG_VALUE_KIND_STR = 1 << 5,
 };
 
 typedef struct CoulangValue {

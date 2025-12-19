@@ -284,6 +284,21 @@ compute_value_from_binary_expr__CoulangInterpreter(const CoulangExpr *expr) {
     return compute_value_from_assign_expr__CoulangInterpreter(expr);
   }
 
+  int combined_value = left.kind | right.kind;
+
+  // Sample hack to make compatible integer and
+  // pointer operation
+  if (combined_value & COULANG_VALUE_KIND_PTR &&
+	  combined_value & COULANG_VALUE_KIND_INT) {
+	  if (left.kind == COULANG_VALUE_KIND_PTR) {
+		  right.kind = COULANG_VALUE_KIND_PTR;
+		  right.ptr = (void*)right.int_;
+	  } else if (right.kind == COULANG_VALUE_KIND_PTR) {
+		  left.kind = COULANG_VALUE_KIND_PTR;
+		  left.ptr = (void*)left.int_;
+	  }
+  }
+
   if ((left.kind ^ right.kind) == 0) {
     CoulangValue res;
 
