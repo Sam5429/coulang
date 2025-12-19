@@ -52,9 +52,9 @@ val KEY_DOWN int = 264
 val KEY_UP int = 265
 
 val window_width int = 700
-val window_height int = 700
-val plane_width int = 30
-val plane_height int = 30
+val window_height int = 900
+val plane_width int = 120
+val plane_height int = 120
 val ship_texture ptr = 0
 val plane_x int = 0
 val plane_y int = window_height - plane_height
