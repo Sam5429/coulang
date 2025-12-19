@@ -298,6 +298,9 @@ compute_value_from_binary_expr__CoulangInterpreter(const CoulangExpr *expr) {
           expr->binary.kind, left.float_, right.float_);
 
       break;
+	case COULANG_VALUE_KIND_PTR:
+	  res = compute_value_from_binary_int_expr__CoulangInterpreter(
+          expr->binary.kind, (uintptr_t)left.ptr, (uintptr_t)right.ptr);
     default:
       goto error;
     }
