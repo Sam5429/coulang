@@ -475,13 +475,14 @@ String search_lib(const char *lib_name) {
     }
     closedir(dir);
   }
-  COULANG_INTERPRETER_ERROR("COUDN'T FIND THE LIB YOU MOTHER SHUTER : %s",
-                            lib_name);
+
+  return init_from_raw__String(lib_name);
 }
 
 void handle_load_decl__CoulangInterpreter(const CoulangDecl *decl) {
   String lib_path = search_lib(decl->load.library->buffer);
   void *lib_handle = dlopen(lib_path.buffer, RTLD_LAZY);
+
   deinit__String(&lib_path);
 
   if (!lib_handle) {
