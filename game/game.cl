@@ -44,7 +44,11 @@ load "librayglue"
 	# void UnloadTexturePtr(Texture2D *texture);
 	UnloadTexturePtr int,
 	# void DrawTexturePtr(Texture2D *texture, int posX, int posY, unsigned char r, unsigned char g, unsigned char b, unsigned char a);
-	DrawTexturePtr int
+	DrawTexturePtr int,
+	# int TextureWidth(Texture2D *texture)
+	TextureWidth int,
+	# int TextureHeight(Texture2D *texture)
+	TextureHeight int
 
 val KEY_RIGHT int = 262
 val KEY_LEFT int = 263
@@ -53,33 +57,33 @@ val KEY_UP int = 265
 
 val window_width int = 700
 val window_height int = 900
-val plane_width int = 120
-val plane_height int = 120
+val ship_width int = 0
+val ship_height int = 0
 val ship_texture ptr = 0
-val plane_x int = 0
-val plane_y int = window_height - plane_height
+val ship_x int = 0
+val ship_y int = 0
 
 fn draw() int {
 	ClearBackgroundRGBA(0, 0, 0, 255)
-	DrawTexturePtr(ship_texture, plane_x, plane_y, 255, 255, 255, 255)
+	DrawTexturePtr(ship_texture, ship_x, ship_y, 255, 255, 255, 255)
 
 	return 0
 }
 
 fn handle_events() int {
     if IsKeyPressed2(KEY_RIGHT) {
-		if plane_x < (window_width - plane_width) {
-			plane_x = (plane_x + 10)
+		if ship_x < (window_width - ship_width) {
+			ship_x = (ship_x + 10)
 		} else {
-			plane_x = (window_width - plane_width)
+			ship_x = (window_width - ship_width)
 		}
     }
 
     if IsKeyPressed2(KEY_LEFT) {
-		if plane_x > 0 {
-			plane_x = (plane_x - 10)
+		if ship_x > 0 {
+			ship_x = (ship_x - 10)
 		} else {
-			plane_x = 0
+			ship_x = 0
 		}
     }
 
@@ -92,6 +96,9 @@ fn main() int {
 	SetTargetFPS(60)
 
 	ship_texture = LoadTexturePtr("game/asset/vaisseau.png")
+	ship_width = TextureWidth(ship_texture)
+	ship_height = TextureHeight(ship_texture)
+	ship_y = (window_height - ship_height)
 
 	while !WindowShouldClose() {
 		handle_events()

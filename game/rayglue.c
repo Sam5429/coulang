@@ -69,3 +69,11 @@ void DrawTexturePtr(Texture2D *texture, int posX, int posY, unsigned char r, uns
 
 	DrawTexture(*texture, posX, posY, color);
 }
+
+int TextureWidth(Texture2D *texture) {
+	return texture->width;
+}
+
+int TextureHeight(Texture2D *texture) {
+	return texture->height;
+}
