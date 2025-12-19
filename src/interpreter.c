@@ -20,7 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "coulang/string.h"
 #include <coulang/interpreter.h>
 #include <coulang/macros.h>
 #include <coulang/scope.h>
@@ -33,6 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 typedef struct {
   CoulangScope *scope;
@@ -44,6 +44,7 @@ typedef struct {
   CoulangInterpreterCallFrame *call_frames;
   size_t call_frames_len;
   size_t call_frames_capacity;
+  Map lib_handles;
 } CoulangInterpreterStack;
 
 static inline CoulangInterpreterCallFrame init__CoulangInterpreterCallFrame();
@@ -178,12 +179,14 @@ CoulangInterpreterStack init__CoulangInterpreterStack() {
       .call_frames = call_frames,
       .call_frames_len = 0,
       .call_frames_capacity = call_frames_capacity,
+	  .lib_handles = init__Map(),
   };
 }
 
 void deinit__CoulangInterpreterStack(
     const CoulangInterpreterStack *const self) {
   deinit__CoulangScope(self->global_scope);
+  deinit_lib_handle__Map(&self->lib_handles);
   free(self->call_frames);
 }
 
@@ -450,7 +453,6 @@ void handle_function_decl__CoulangInterpreter(const CoulangDecl *decl) {
                              init_decl__CoulangFunction(&decl->function));
 }
 
-#include <unistd.h>
 String search_lib(const char *lib_name) {
   char *list_lib[] = {"./build/", "/lib/", "/usr/lib/", "/lib/x86_64-linux-gnu/"};
 
@@ -492,6 +494,7 @@ void handle_load_decl__CoulangInterpreter(const CoulangDecl *decl) {
   }
 
   CoulangDeclLoadFunction *current = decl->load.symbols;
+
   while (current) {
     const String *symbol_name = current->name;
     void *addr = dlsym(lib_handle, symbol_name->buffer);
@@ -509,8 +512,7 @@ void handle_load_decl__CoulangInterpreter(const CoulangDecl *decl) {
     current = current->next;
   }
 
-  // TODO: Close this somehow.
-  // dlclose(lib);
+  insert__Map(&interpreter_stack.lib_handles, decl->load.library, lib_handle);
 }
 
 void handle_variable_decl__CoulangInterpreter(const CoulangDecl *decl) {
