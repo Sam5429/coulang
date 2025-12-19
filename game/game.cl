@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-load "librayglue.so"
+load "librayglue"
 	# void InitWindow(int width, int height, const char *title);
 	InitWindow int,
 	# bool WindowShouldClose(void);
