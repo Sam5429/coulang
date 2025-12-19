@@ -17,7 +17,7 @@ already created several with it.
 So, to learn new things and make it fun, we decided to create an
 interpreted language that could call C functions by loading dynamic
 libraries with
-[dl](https://man7.org/linux/man-pages/man3/dlopen.3.html].
+[dl](https://man7.org/linux/man-pages/man3/dlopen.3.html).
 
 So here's the plan:
 
