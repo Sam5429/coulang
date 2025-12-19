@@ -37,44 +37,50 @@ load "build/librayglue.so"
 	DrawRectangleRGBA int,
 	# void SetTargetFPS(int fps);
 	SetTargetFPS int,
-    # bool IsKeyPressed(int key);
-    IsKeyPressed int
-load "/usr/lib/libc.so.6" puts int
+    # bool IsKeyPressed2(int key);
+	IsKeyPressed2 int
 
 val KEY_RIGHT int = 262
 val KEY_LEFT int = 263
 val KEY_DOWN int = 264
 val KEY_UP int = 265
 
+val window_width int = 700
+val window_height int = 700
+val plane_width int = 100
+val plane_height int = 100
+val plane_x int = 0
+val plane_y int = window_height - plane_height
+
 fn draw() int {
-	ClearBackgroundRGBA(255, 255, 255, 255)
-	DrawRectangleRGBA(0, 0, 100, 100, 230, 41, 55, 255)
+	ClearBackgroundRGBA(0, 0, 0, 255)
+	DrawRectangleRGBA(plane_x, plane_y, plane_width, plane_height, 230, 41, 55, 255)
 
 	return 0
 }
 
 fn handle_events() int {
-    if IsKeyPressed(KEY_RIGHT) {
-        puts("Right Pressed!!")
+    if IsKeyPressed2(KEY_RIGHT) {
+		if plane_x < (window_width - plane_width) {
+			plane_x = (plane_x + 10)
+		} else {
+			plane_x = (window_width - plane_width)
+		}
     }
 
-    if IsKeyPressed(KEY_LEFT) {
-        puts("Left Pressed!!")
-    }
-
-    if IsKeyPressed(KEY_DOWN) {
-        puts("Down Pressed!!")
-    }
-
-    if IsKeyPressed(KEY_UP) {
-        puts("Up Pressed!!")
+    if IsKeyPressed2(KEY_LEFT) {
+		if plane_x > 0 {
+			plane_x = (plane_x - 10)
+		} else {
+			plane_x = 0
+		}
     }
 
 	return 0
 }
 
 fn main() int {
-	InitWindow(700, 700, "Game")
+	InitWindow(window_width, window_height, "Game")
 
 	SetTargetFPS(60)
 

@@ -36,3 +36,11 @@ void DrawRectangleRGBA(int posX, int posY, int width, int height, unsigned char 
 
 	DrawRectangle(posX, posY, width, height, color);
 }
+
+// NOTE: For some reason IsKeyDown return garbage,
+// so we will define IsKeyPressed2, to reproduce
+// the behaviour of this function.
+bool IsKeyPressed2(int key)
+{
+	return IsKeyPressed(key) || IsKeyPressedRepeat(key);
+}

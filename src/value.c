@@ -87,7 +87,9 @@ get_integer_as_c_value__CoulangValue(CoulangValue *self)
 		case COULANG_VALUE_KIND_PTR:
 			return (uintptr_t)self->ptr;
 		case COULANG_VALUE_KIND_STR:
-			return (uintptr_t)self->str->buffer;
+			// NOTE: In the case the string is empty the buffer is NULL by default, so
+			// to avoid that we return the address of an empty string by default.
+			return self->str->len == 0 ? (uintptr_t)"" : (uintptr_t)self->str->buffer;
 		default:
 			COULANG_INTERPRETER_ERROR("this is not a C compatible integer");
 	}
