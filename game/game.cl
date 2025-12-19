@@ -64,14 +64,18 @@ fn draw() int {
 
 fn handle_events() int {
     if IsKeyPressed2(KEY_RIGHT) {
-		if plane_x < 700 {
+		if plane_x < (window_width - plane_width) {
 			plane_x = (plane_x + 10)
+		} else {
+			plane_x = (window_width - plane_width)
 		}
     }
 
     if IsKeyPressed2(KEY_LEFT) {
 		if plane_x > 0 {
 			plane_x = (plane_x - 10)
+		} else {
+			plane_x = 0
 		}
     }
 
