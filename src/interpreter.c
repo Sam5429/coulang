@@ -20,15 +20,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "coulang/string.h"
 #include <coulang/interpreter.h>
 #include <coulang/macros.h>
 #include <coulang/scope.h>
-#include <coulang/value.h>
 #include <coulang/symbol_runner.h>
+#include <coulang/value.h>
 
+#include <dirent.h>
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 
 typedef struct {
   CoulangScope *scope;
@@ -52,9 +56,12 @@ static CoulangInterpreterStack init__CoulangInterpreterStack();
 static void
 deinit__CoulangInterpreterStack(const CoulangInterpreterStack *const self);
 
-static CoulangVariable *find_variable__CoulangInterpreter(CoulangScope *current_scope, const String *identifier);
+static CoulangVariable *
+find_variable__CoulangInterpreter(CoulangScope *current_scope,
+                                  const String *identifier);
 
-static CoulangValue compute_value_from_assign_expr__CoulangInterpreter(const CoulangExpr *expr);
+static CoulangValue
+compute_value_from_assign_expr__CoulangInterpreter(const CoulangExpr *expr);
 
 static CoulangValue compute_value_from_binary_int_expr__CoulangInterpreter(
     enum CoulangExprBinaryKind kind, int64_t left, int64_t right);
@@ -74,14 +81,13 @@ compute_value_from_list_expr__CoulangInterprerter(const CoulangExpr *expr);
 static CoulangValue
 compute_value_from_identifier_expr__CoulangInterpreter(const CoulangExpr *expr);
 
-static CoulangValue compute_value_from_function_symbol_call_expr__CoulangInterpreter(
-	const CoulangExpr *expr,
-    CoulangFunction *function);
+static CoulangValue
+compute_value_from_function_symbol_call_expr__CoulangInterpreter(
+    const CoulangExpr *expr, CoulangFunction *function);
 
 static CoulangValue
 compute_value_from_function_decl_call_expr__CoulangInterpreter(
-	const CoulangExpr *expr,
-    CoulangFunction *function);
+    const CoulangExpr *expr, CoulangFunction *function);
 
 static CoulangValue compute_value_from_function_call_expr__CoulangInterpreter(
     const CoulangExpr *expr);
@@ -99,29 +105,23 @@ static void handle_variable_decl__CoulangInterpreter(const CoulangDecl *decl);
 static void
 handle_decls__CoulangInterpreter(const CoulangDeclFunctionBody *body);
 
-static void
-compute_if_stmt__CoulangInterpreter(const CoulangStmt *stmt);
+static void compute_if_stmt__CoulangInterpreter(const CoulangStmt *stmt);
+
+static void compute_return_stmt__CoulangInterpreter(const CoulangStmt *stmt);
+
+static void compute_while_stmt__CoulangInterpreter(const CoulangStmt *stmt);
+
+static void coulang_stmt__CoulangInterpreter(const CoulangStmt *stmt);
 
 static void
-compute_return_stmt__CoulangInterpreter(const CoulangStmt *stmt);
+push_call_frame__CoulangInterpreter(CoulangExpr *called_params,
+                                    CoulangDeclFunctionParam *decl_params);
 
-static void
-compute_while_stmt__CoulangInterpreter(const CoulangStmt *stmt);
+static CoulangInterpreterCallFrame pop_call_frame__CoulangInterpreter();
 
-static void
-coulang_stmt__CoulangInterpreter(const CoulangStmt *stmt);
+static void add_current_scope__CoulangInterpreter();
 
-static void
-push_call_frame__CoulangInterpreter(CoulangExpr *called_params, CoulangDeclFunctionParam *decl_params);
-
-static CoulangInterpreterCallFrame
-pop_call_frame__CoulangInterpreter();
-
-static void
-add_current_scope__CoulangInterpreter();
-
-static void
-remove_current_scope__CoulangInterpreter();
+static void remove_current_scope__CoulangInterpreter();
 
 static void
 compute_body__CoulangInterpreter(const CoulangDeclFunctionBody *body);
@@ -130,23 +130,26 @@ static void
 compute_child_body__CoulangInterpreter(const CoulangDeclFunctionBody *body);
 
 static void
-compute_function_body__CoulangInterpreter(CoulangExpr *called_params, CoulangDeclFunctionParam *decl_params, const CoulangDeclFunctionBody *body);
+compute_function_body__CoulangInterpreter(CoulangExpr *called_params,
+                                          CoulangDeclFunctionParam *decl_params,
+                                          const CoulangDeclFunctionBody *body);
 
-#define CURRENT_FRAME() (interpreter_stack.call_frames_len > 0 ? \
-      &interpreter_stack \
-          .call_frames[interpreter_stack.call_frames_len - 1]: \
-			NULL)
+#define CURRENT_FRAME()                                                        \
+  (interpreter_stack.call_frames_len > 0                                       \
+       ? &interpreter_stack.call_frames[interpreter_stack.call_frames_len - 1] \
+       : NULL)
 
-#define CURRENT_SCOPE_REF() ({ \
-	CoulangInterpreterCallFrame *_frame = CURRENT_FRAME(); \
-	CoulangScope **_scope = &interpreter_stack.global_scope; \
-	\
-	if (_frame) { \
-		_scope = &_frame->scope; \
-	} \
-	\
-	_scope; \
-})
+#define CURRENT_SCOPE_REF()                                                    \
+  ({                                                                           \
+    CoulangInterpreterCallFrame *_frame = CURRENT_FRAME();                     \
+    CoulangScope **_scope = &interpreter_stack.global_scope;                   \
+                                                                               \
+    if (_frame) {                                                              \
+      _scope = &_frame->scope;                                                 \
+    }                                                                          \
+                                                                               \
+    _scope;                                                                    \
+  })
 
 #define CURRENT_SCOPE() (*CURRENT_SCOPE_REF())
 
@@ -157,8 +160,7 @@ CoulangInterpreterCallFrame init__CoulangInterpreterCallFrame() {
 
   scope->parent = interpreter_stack.global_scope;
 
-  return (CoulangInterpreterCallFrame){.scope = scope,
-                                       .return_value = {0}};
+  return (CoulangInterpreterCallFrame){.scope = scope, .return_value = {0}};
 }
 
 void deinit__CoulangInterpreterCallFrame(
@@ -185,36 +187,37 @@ void deinit__CoulangInterpreterStack(
   free(self->call_frames);
 }
 
-CoulangVariable *find_variable__CoulangInterpreter(CoulangScope *current_scope, const String *identifier)
-{
-	CoulangVariable *variable =
+CoulangVariable *find_variable__CoulangInterpreter(CoulangScope *current_scope,
+                                                   const String *identifier) {
+  CoulangVariable *variable =
       get_variable__CoulangScope(current_scope, identifier);
 
-	if (!variable) {
-		COULANG_INTERPRETER_ERROR("cannot found variable: %s",
-                              identifier->buffer);
-	}
+  if (!variable) {
+    COULANG_INTERPRETER_ERROR("cannot found variable: %s", identifier->buffer);
+  }
 
-	return variable;
+  return variable;
 }
 
-CoulangValue compute_value_from_assign_expr__CoulangInterpreter(const CoulangExpr *expr)
-{
-	CoulangExpr *left = expr->binary.left;
+CoulangValue
+compute_value_from_assign_expr__CoulangInterpreter(const CoulangExpr *expr) {
+  CoulangExpr *left = expr->binary.left;
 
-	if (left->kind != COULANG_EXPR_KIND_IDENTIFIER) {
-		COULANG_INTERPRETER_ERROR("expected identifier on left");
-	}
+  if (left->kind != COULANG_EXPR_KIND_IDENTIFIER) {
+    COULANG_INTERPRETER_ERROR("expected identifier on left");
+  }
 
-	CoulangScope *current_scope = CURRENT_SCOPE();
-	CoulangVariable *variable = find_variable__CoulangInterpreter(current_scope, left->identifier);
-	CoulangValue old_variable_value = variable->value;
+  CoulangScope *current_scope = CURRENT_SCOPE();
+  CoulangVariable *variable =
+      find_variable__CoulangInterpreter(current_scope, left->identifier);
+  CoulangValue old_variable_value = variable->value;
 
-	variable->value = compute_value_from_expr__CoulangInterpreter(expr->binary.right);
+  variable->value =
+      compute_value_from_expr__CoulangInterpreter(expr->binary.right);
 
-	deinit__CoulangValue(&old_variable_value);
+  deinit__CoulangValue(&old_variable_value);
 
-	return init_int__CoulangValue(0);
+  return init_int__CoulangValue(0);
 }
 
 #define COMPUTE_VALUE_FROM_BINARY_NUMBER_EXPR(kind, type, left, right)         \
@@ -265,7 +268,7 @@ compute_value_from_binary_expr__CoulangInterpreter(const CoulangExpr *expr) {
       compute_value_from_expr__CoulangInterpreter(expr->binary.right);
 
   if (expr->binary.kind == COULANG_EXPR_BINARY_KIND_ASSIGN) {
-	  return compute_value_from_assign_expr__CoulangInterpreter(expr);
+    return compute_value_from_assign_expr__CoulangInterpreter(expr);
   }
 
   if ((left.kind ^ right.kind) == 0) {
@@ -342,50 +345,53 @@ compute_value_from_list_expr__CoulangInterprerter(const CoulangExpr *expr) {
 CoulangValue compute_value_from_identifier_expr__CoulangInterpreter(
     const CoulangExpr *expr) {
   CoulangScope *current_scope = CURRENT_SCOPE();
-  CoulangVariable *variable = find_variable__CoulangInterpreter(current_scope, expr->identifier);
+  CoulangVariable *variable =
+      find_variable__CoulangInterpreter(current_scope, expr->identifier);
 
   return variable->value;
 }
 
 CoulangValue compute_value_from_function_symbol_call_expr__CoulangInterpreter(
-	const CoulangExpr *expr,
-    CoulangFunction *function) {
-	size_t params_len = expr->function_call.params_len;
-	CoulangExpr *current = expr->function_call.params;
-	CoulangValue *params = COULANG_ALLOC(sizeof(CoulangValue) * params_len);
+    const CoulangExpr *expr, CoulangFunction *function) {
+  size_t params_len = expr->function_call.params_len;
+  CoulangExpr *current = expr->function_call.params;
+  CoulangValue *params = COULANG_ALLOC(sizeof(CoulangValue) * params_len);
 
-	for (size_t i = 0; i < params_len && current; ++i) {
-		params[i] = compute_value_from_expr__CoulangInterpreter(current);
-		current = current->next;
-	}
+  for (size_t i = 0; i < params_len && current; ++i) {
+    params[i] = compute_value_from_expr__CoulangInterpreter(current);
+    current = current->next;
+  }
 
-	CoulangValue return_value = run__SymbolRunner(function->symbol.addr, params, params_len, function->symbol.data_type);
+  CoulangValue return_value = run__SymbolRunner(
+      function->symbol.addr, params, params_len, function->symbol.data_type);
 
-	for (size_t i = 0; i < params_len; ++i) {
-		deinit__CoulangValue(&params[i]);
-	}
+  for (size_t i = 0; i < params_len; ++i) {
+    deinit__CoulangValue(&params[i]);
+  }
 
-	free(params);
+  free(params);
 
-	return return_value;
+  return return_value;
 }
 
 CoulangValue compute_value_from_function_decl_call_expr__CoulangInterpreter(
-	const CoulangExpr *expr,
-    CoulangFunction *function) {
-	// FIXME: Need to figure out a way, to be able to resume the
-	// execution of a function, after the return of a function
-	// call, by avoiding to call
-	// `compute_function_body__CoulangInterpreter`
-	// recursively.
-	compute_function_body__CoulangInterpreter(expr->function_call.params, function->decl->params, &function->decl->body);
+    const CoulangExpr *expr, CoulangFunction *function) {
+  // FIXME: Need to figure out a way, to be able to resume the
+  // execution of a function, after the return of a function
+  // call, by avoiding to call
+  // `compute_function_body__CoulangInterpreter`
+  // recursively.
+  compute_function_body__CoulangInterpreter(expr->function_call.params,
+                                            function->decl->params,
+                                            &function->decl->body);
 
-	CoulangInterpreterCallFrame popped_frame = pop_call_frame__CoulangInterpreter();
-	CoulangValue return_value = popped_frame.return_value;
+  CoulangInterpreterCallFrame popped_frame =
+      pop_call_frame__CoulangInterpreter();
+  CoulangValue return_value = popped_frame.return_value;
 
-	deinit__CoulangInterpreterCallFrame(&popped_frame);
+  deinit__CoulangInterpreterCallFrame(&popped_frame);
 
-	return return_value;
+  return return_value;
 }
 
 CoulangValue compute_value_from_function_call_expr__CoulangInterpreter(
@@ -404,12 +410,10 @@ CoulangValue compute_value_from_function_call_expr__CoulangInterpreter(
   switch (function->kind) {
   case COULANG_FUNCTION_KIND_SYMBOL:
     return compute_value_from_function_symbol_call_expr__CoulangInterpreter(
-		expr,
-        function);
+        expr, function);
   case COULANG_FUNCTION_KIND_DECL:
     return compute_value_from_function_decl_call_expr__CoulangInterpreter(
-		expr,
-        function);
+        expr, function);
   default:
     COULANG_UNREACHABLE("unknown function kind");
   }
@@ -446,8 +450,39 @@ void handle_function_decl__CoulangInterpreter(const CoulangDecl *decl) {
                              init_decl__CoulangFunction(&decl->function));
 }
 
+#include <unistd.h>
+String search_lib(const char *lib_name) {
+  char *list_lib[] = {"/lib/", "/usr/lib/", "/lib/x86_64-linux-gnu/"};
+
+  for (size_t i = 0; i < sizeof(list_lib) / sizeof(*list_lib); i++) {
+    DIR *dir;
+    struct dirent *dp;
+    if ((dir = opendir(list_lib[i])) == NULL) {
+      continue;
+    }
+
+    while ((dp = readdir(dir)) != NULL) {
+      if (strstr(dp->d_name, lib_name) != 0) {
+        String name = init_from_2_row__String(list_lib[i], dp->d_name);
+        struct stat perm;
+        stat(name.buffer, &perm);
+        if (access(name.buffer, X_OK) == 0) {
+          closedir(dir);
+          return name;
+        }
+        deinit__String(&name);
+      }
+    }
+    closedir(dir);
+  }
+  COULANG_INTERPRETER_ERROR("COUDN'T FIND THE LIB YOU MOTHER SHUTER : %s",
+                            lib_name);
+}
+
 void handle_load_decl__CoulangInterpreter(const CoulangDecl *decl) {
-  void *lib_handle = dlopen(decl->load.library->buffer, RTLD_LAZY);
+  String lib_path = search_lib(decl->load.library->buffer);
+  void *lib_handle = dlopen(lib_path.buffer, RTLD_LAZY);
+  deinit__String(&lib_path);
 
   if (!lib_handle) {
     COULANG_INTERPRETER_ERROR(
@@ -463,8 +498,8 @@ void handle_load_decl__CoulangInterpreter(const CoulangDecl *decl) {
     if (addr) {
       add_function__CoulangScope(
           interpreter_stack.global_scope,
-          init_symbol__CoulangFunction(
-              init__CoulangFunctionSymbol(symbol_name, addr, current->data_type)));
+          init_symbol__CoulangFunction(init__CoulangFunctionSymbol(
+              symbol_name, addr, current->data_type)));
     } else {
       COULANG_INTERPRETER_ERROR("`%s` symbol cannot be loaded from: %s",
                                 symbol_name->buffer,
@@ -515,182 +550,175 @@ void handle_decls__CoulangInterpreter(const CoulangDeclFunctionBody *body) {
   }
 }
 
-void
-compute_if_stmt__CoulangInterpreter(const CoulangStmt *stmt)
-{
-	CoulangStmtIfBranch *if_branch = stmt->if_.ifs;
+void compute_if_stmt__CoulangInterpreter(const CoulangStmt *stmt) {
+  CoulangStmtIfBranch *if_branch = stmt->if_.ifs;
 
-	while (if_branch) {
-		CoulangValue value = compute_value_from_expr__CoulangInterpreter(if_branch->cond);
+  while (if_branch) {
+    CoulangValue value =
+        compute_value_from_expr__CoulangInterpreter(if_branch->cond);
 
-		if (is_cond_true__CoulangValue(&value)) {
-			deinit__CoulangValue(&value);
-			compute_child_body__CoulangInterpreter(if_branch->body);
+    if (is_cond_true__CoulangValue(&value)) {
+      deinit__CoulangValue(&value);
+      compute_child_body__CoulangInterpreter(if_branch->body);
 
-			return;
-		}
+      return;
+    }
 
-		deinit__CoulangValue(&value);
+    deinit__CoulangValue(&value);
 
-		if_branch = if_branch->next;
-	}
+    if_branch = if_branch->next;
+  }
 
-	if (stmt->if_.else_) {
-		compute_child_body__CoulangInterpreter(stmt->if_.else_);
-	}
-}
-
-void
-compute_return_stmt__CoulangInterpreter(const CoulangStmt *stmt)
-{
-	CoulangValue return_value = compute_value_from_expr__CoulangInterpreter(stmt->return_);
-	CoulangInterpreterCallFrame *current_frame = CURRENT_FRAME();
-
-	if (current_frame) {
-		current_frame->return_value = return_value;
-
-		return;
-	}
-
-    COULANG_UNREACHABLE("return is impossible here");
-}
-
-void
-compute_while_stmt__CoulangInterpreter(const CoulangStmt *stmt)
-{
-	while (true) {
-		CoulangValue value = compute_value_from_expr__CoulangInterpreter(stmt->while_.cond);
-
-		if (is_cond_true__CoulangValue(&value)) {
-			deinit__CoulangValue(&value);
-			compute_child_body__CoulangInterpreter(stmt->while_.body);
-
-			continue;
-		}
-
-		deinit__CoulangValue(&value);
-
-		break;
-	}
-}
-
-void
-coulang_stmt__CoulangInterpreter(const CoulangStmt *stmt)
-{
-	switch (stmt->kind) {
-		case COULANG_STMT_KIND_IF:
-			return compute_if_stmt__CoulangInterpreter(stmt);
-		case COULANG_STMT_KIND_RETURN:
-			return compute_return_stmt__CoulangInterpreter(stmt);
-		case COULANG_STMT_KIND_WHILE:
-			return compute_while_stmt__CoulangInterpreter(stmt);
-		default:
-			COULANG_UNREACHABLE("unknown statement kind");
-	}
-}
-
-void
-push_call_frame__CoulangInterpreter(CoulangExpr *called_params, CoulangDeclFunctionParam *decl_params)
-{
-	if (interpreter_stack.call_frames_len < interpreter_stack.call_frames_capacity) {
-		interpreter_stack.call_frames[interpreter_stack.call_frames_len++] = init__CoulangInterpreterCallFrame();
-		CoulangScope *current_scope = CURRENT_SCOPE();
-		CoulangExpr *current_called_param = called_params;
-		CoulangDeclFunctionParam *current_decl_param = decl_params;
-
-		while (current_called_param && current_decl_param) {
-			CoulangValue param_value = compute_value_from_expr__CoulangInterpreter(current_called_param);
-
-			add_variable__CoulangScope(current_scope, init__CoulangVariable(current_decl_param->name, param_value));
-
-			current_called_param = current_called_param->next;
-			current_decl_param = current_decl_param->next;
-		}
-
-		if (current_called_param || current_decl_param) {
-			COULANG_INTERPRETER_ERROR("missing parameter");
-		}
-	} else {
-		COULANG_INTERPRETER_ERROR("call frame overflow");
-	}
-}
-
-CoulangInterpreterCallFrame
-pop_call_frame__CoulangInterpreter()
-{
-	if (interpreter_stack.call_frames_len > 0) {
-		return interpreter_stack.call_frames[--interpreter_stack.call_frames_len];
-	}
-
-	COULANG_UNREACHABLE("unable to get the top call frame");
-}
-
-void
-add_current_scope__CoulangInterpreter()
-{
-	CoulangScope **current_scope_ref = CURRENT_SCOPE_REF();
-	CoulangScope *new_scope = init__CoulangScope();
-
-	new_scope->parent = *current_scope_ref;
-	*current_scope_ref = new_scope;
-}
-
-void
-remove_current_scope__CoulangInterpreter()
-{
-	CoulangScope **current_scope_ref = CURRENT_SCOPE_REF();
-	CoulangScope *old_current_scope = *current_scope_ref;
-
-	*current_scope_ref = old_current_scope->parent;
-
-	deinit__CoulangScope(old_current_scope);
-}
-
-void
-compute_body__CoulangInterpreter(const CoulangDeclFunctionBody *body)
-{
-	CoulangInterpreterCallFrame *current_frame = CURRENT_FRAME();
-
-  for (size_t i = 0; i < body->len && !is_initialized__CoulangValue(&current_frame->return_value); ++i) {
-    const CoulangDeclFunctionBodyItem *item = &body->items[i];
-
-	switch (item->kind) {
-		case COULANG_DECL_FUNCTION_BODY_ITEM_KIND_DECL:
-			if (item->decl->kind == COULANG_DECL_KIND_VARIABLE) {
-				handle_variable_decl__CoulangInterpreter(item->decl);
-			} else {
-				COULANG_UNREACHABLE("this declaration is not expected");
-			}
-
-			break;
-		case COULANG_DECL_FUNCTION_BODY_ITEM_KIND_STMT:
-			coulang_stmt__CoulangInterpreter(&item->stmt);
-
-			break;
-		case COULANG_DECL_FUNCTION_BODY_ITEM_KIND_EXPR: {
-			CoulangValue value = compute_value_from_expr__CoulangInterpreter(item->expr);
-
-			deinit__CoulangValue(&value);
-
-			break;
-		}
-		default:
-			COULANG_UNREACHABLE("unknown item kind");
-	}
+  if (stmt->if_.else_) {
+    compute_child_body__CoulangInterpreter(stmt->if_.else_);
   }
 }
 
-void
-compute_child_body__CoulangInterpreter(const CoulangDeclFunctionBody *body)
-{
+void compute_return_stmt__CoulangInterpreter(const CoulangStmt *stmt) {
+  CoulangValue return_value =
+      compute_value_from_expr__CoulangInterpreter(stmt->return_);
+  CoulangInterpreterCallFrame *current_frame = CURRENT_FRAME();
+
+  if (current_frame) {
+    current_frame->return_value = return_value;
+
+    return;
+  }
+
+  COULANG_UNREACHABLE("return is impossible here");
+}
+
+void compute_while_stmt__CoulangInterpreter(const CoulangStmt *stmt) {
+  while (true) {
+    CoulangValue value =
+        compute_value_from_expr__CoulangInterpreter(stmt->while_.cond);
+
+    if (is_cond_true__CoulangValue(&value)) {
+      deinit__CoulangValue(&value);
+      compute_child_body__CoulangInterpreter(stmt->while_.body);
+
+      continue;
+    }
+
+    deinit__CoulangValue(&value);
+
+    break;
+  }
+}
+
+void coulang_stmt__CoulangInterpreter(const CoulangStmt *stmt) {
+  switch (stmt->kind) {
+  case COULANG_STMT_KIND_IF:
+    return compute_if_stmt__CoulangInterpreter(stmt);
+  case COULANG_STMT_KIND_RETURN:
+    return compute_return_stmt__CoulangInterpreter(stmt);
+  case COULANG_STMT_KIND_WHILE:
+    return compute_while_stmt__CoulangInterpreter(stmt);
+  default:
+    COULANG_UNREACHABLE("unknown statement kind");
+  }
+}
+
+void push_call_frame__CoulangInterpreter(
+    CoulangExpr *called_params, CoulangDeclFunctionParam *decl_params) {
+  if (interpreter_stack.call_frames_len <
+      interpreter_stack.call_frames_capacity) {
+    interpreter_stack.call_frames[interpreter_stack.call_frames_len++] =
+        init__CoulangInterpreterCallFrame();
+    CoulangScope *current_scope = CURRENT_SCOPE();
+    CoulangExpr *current_called_param = called_params;
+    CoulangDeclFunctionParam *current_decl_param = decl_params;
+
+    while (current_called_param && current_decl_param) {
+      CoulangValue param_value =
+          compute_value_from_expr__CoulangInterpreter(current_called_param);
+
+      add_variable__CoulangScope(
+          current_scope,
+          init__CoulangVariable(current_decl_param->name, param_value));
+
+      current_called_param = current_called_param->next;
+      current_decl_param = current_decl_param->next;
+    }
+
+    if (current_called_param || current_decl_param) {
+      COULANG_INTERPRETER_ERROR("missing parameter");
+    }
+  } else {
+    COULANG_INTERPRETER_ERROR("call frame overflow");
+  }
+}
+
+CoulangInterpreterCallFrame pop_call_frame__CoulangInterpreter() {
+  if (interpreter_stack.call_frames_len > 0) {
+    return interpreter_stack.call_frames[--interpreter_stack.call_frames_len];
+  }
+
+  COULANG_UNREACHABLE("unable to get the top call frame");
+}
+
+void add_current_scope__CoulangInterpreter() {
+  CoulangScope **current_scope_ref = CURRENT_SCOPE_REF();
+  CoulangScope *new_scope = init__CoulangScope();
+
+  new_scope->parent = *current_scope_ref;
+  *current_scope_ref = new_scope;
+}
+
+void remove_current_scope__CoulangInterpreter() {
+  CoulangScope **current_scope_ref = CURRENT_SCOPE_REF();
+  CoulangScope *old_current_scope = *current_scope_ref;
+
+  *current_scope_ref = old_current_scope->parent;
+
+  deinit__CoulangScope(old_current_scope);
+}
+
+void compute_body__CoulangInterpreter(const CoulangDeclFunctionBody *body) {
+  CoulangInterpreterCallFrame *current_frame = CURRENT_FRAME();
+
+  for (size_t i = 0; i < body->len && !is_initialized__CoulangValue(
+                                          &current_frame->return_value);
+       ++i) {
+    const CoulangDeclFunctionBodyItem *item = &body->items[i];
+
+    switch (item->kind) {
+    case COULANG_DECL_FUNCTION_BODY_ITEM_KIND_DECL:
+      if (item->decl->kind == COULANG_DECL_KIND_VARIABLE) {
+        handle_variable_decl__CoulangInterpreter(item->decl);
+      } else {
+        COULANG_UNREACHABLE("this declaration is not expected");
+      }
+
+      break;
+    case COULANG_DECL_FUNCTION_BODY_ITEM_KIND_STMT:
+      coulang_stmt__CoulangInterpreter(&item->stmt);
+
+      break;
+    case COULANG_DECL_FUNCTION_BODY_ITEM_KIND_EXPR: {
+      CoulangValue value =
+          compute_value_from_expr__CoulangInterpreter(item->expr);
+
+      deinit__CoulangValue(&value);
+
+      break;
+    }
+    default:
+      COULANG_UNREACHABLE("unknown item kind");
+    }
+  }
+}
+
+void compute_child_body__CoulangInterpreter(
+    const CoulangDeclFunctionBody *body) {
   add_current_scope__CoulangInterpreter();
   compute_body__CoulangInterpreter(body);
   remove_current_scope__CoulangInterpreter();
 }
 
-void
-compute_function_body__CoulangInterpreter(CoulangExpr *called_params, CoulangDeclFunctionParam *decl_params, const CoulangDeclFunctionBody *body)
-{
+void compute_function_body__CoulangInterpreter(
+    CoulangExpr *called_params, CoulangDeclFunctionParam *decl_params,
+    const CoulangDeclFunctionBody *body) {
   push_call_frame__CoulangInterpreter(called_params, decl_params);
   compute_body__CoulangInterpreter(body);
 }
@@ -703,14 +731,17 @@ void run__CoulangInterpreter(const CoulangDeclFunctionBody *body) {
   String main_fn_name = init_from_raw__String("main");
   CoulangFunction *main_function = NULL;
 
-  if ((main_function = get_function__CoulangScope(interpreter_stack.global_scope, &main_fn_name))) {
-	  compute_function_body__CoulangInterpreter(NULL, NULL, &main_function->decl->body);
+  if ((main_function = get_function__CoulangScope(
+           interpreter_stack.global_scope, &main_fn_name))) {
+    compute_function_body__CoulangInterpreter(NULL, NULL,
+                                              &main_function->decl->body);
 
-	  CoulangInterpreterCallFrame main_frame = pop_call_frame__CoulangInterpreter();
+    CoulangInterpreterCallFrame main_frame =
+        pop_call_frame__CoulangInterpreter();
 
-	  deinit__CoulangInterpreterCallFrame(&main_frame);
+    deinit__CoulangInterpreterCallFrame(&main_frame);
   } else {
-	  COULANG_INTERPRETER_ERROR("expected to have a main function");
+    COULANG_INTERPRETER_ERROR("expected to have a main function");
   }
 
   deinit__String(&main_fn_name);
