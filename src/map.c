@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dlfcn.h>
 
 static inline MapPair
 init__MapPair(const String *key, void *value);
@@ -253,4 +254,12 @@ void
 deinit_variables__Map(const Map *const self)
 {
 	MAP_T_FREE(self, CoulangVariable);
+}
+
+void
+deinit_lib_handle__Map(const Map *const self)
+{
+#define deinit__LibHandle(lib) dlclose(lib)
+	MAP_T_FREE(self, LibHandle);
+#undef deinit__LibHandle
 }

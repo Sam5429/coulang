@@ -70,4 +70,7 @@ deinit_functions__Map(const Map *const self);
 void
 deinit_variables__Map(const Map *const self);
 
+void
+deinit_lib_handle__Map(const Map *const self);
+
 #endif // COULANG_MAP_H
