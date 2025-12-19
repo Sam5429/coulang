@@ -93,6 +93,8 @@ compute_value_from_function_decl_call_expr__CoulangInterpreter(
 static CoulangValue compute_value_from_function_call_expr__CoulangInterpreter(
     const CoulangExpr *expr);
 
+static CoulangValue *get_value_ref_from_list_access_expr__CoulangInterpreter(const CoulangExpr *expr);
+
 static CoulangValue compute_value_from_list_access_expr__CoulangInterpreter(
     const CoulangExpr *expr);
 
@@ -209,19 +211,24 @@ CoulangValue
 compute_value_from_assign_expr__CoulangInterpreter(const CoulangExpr *expr) {
   CoulangExpr *left = expr->binary.left;
 
-  if (left->kind != COULANG_EXPR_KIND_IDENTIFIER) {
-    COULANG_INTERPRETER_ERROR("expected identifier on left");
+  if (left->kind == COULANG_EXPR_KIND_IDENTIFIER) {
+	  CoulangScope *current_scope = CURRENT_SCOPE();
+	  CoulangVariable *variable =
+		  find_variable__CoulangInterpreter(current_scope, left->identifier);
+	  CoulangValue old_variable_value = variable->value;
+
+	  variable->value =
+		  compute_value_from_expr__CoulangInterpreter(expr->binary.right);
+
+	  deinit__CoulangValue(&old_variable_value);
+  } else if (left->kind == COULANG_EXPR_KIND_LIST_ACCESS) {
+	  CoulangValue *value_ref = get_value_ref_from_list_access_expr__CoulangInterpreter(left);
+	  CoulangValue old_value = *value_ref;
+
+	  *value_ref = compute_value_from_expr__CoulangInterpreter(expr->binary.right);
+
+	  deinit__CoulangValue(&old_value);
   }
-
-  CoulangScope *current_scope = CURRENT_SCOPE();
-  CoulangVariable *variable =
-      find_variable__CoulangInterpreter(current_scope, left->identifier);
-  CoulangValue old_variable_value = variable->value;
-
-  variable->value =
-      compute_value_from_expr__CoulangInterpreter(expr->binary.right);
-
-  deinit__CoulangValue(&old_variable_value);
 
   return init_int__CoulangValue(0);
 }
@@ -425,8 +432,7 @@ CoulangValue compute_value_from_function_call_expr__CoulangInterpreter(
   }
 }
 
-CoulangValue compute_value_from_list_access_expr__CoulangInterpreter(
-    const CoulangExpr *expr)
+CoulangValue *get_value_ref_from_list_access_expr__CoulangInterpreter(const CoulangExpr *expr)
 {
 	// NOTE: If you try to free list_value, it will end up with something wrong.
 	CoulangValue list_value = compute_value_from_expr__CoulangInterpreter(expr->list_access.list);
@@ -445,11 +451,17 @@ CoulangValue compute_value_from_list_access_expr__CoulangInterpreter(
 		COULANG_INTERPRETER_ERROR("index out of bounds");
 	}
 
-	CoulangValue acceded_value = list_value.list.buffer[index_value.int_];
+	CoulangValue *acceded_value = &list_value.list.buffer[index_value.int_];
 
 	deinit__CoulangValue(&index_value);
 
 	return acceded_value;
+}
+
+CoulangValue compute_value_from_list_access_expr__CoulangInterpreter(
+    const CoulangExpr *expr)
+{
+	return *get_value_ref_from_list_access_expr__CoulangInterpreter(expr);
 }
 
 CoulangValue
