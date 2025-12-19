@@ -636,7 +636,9 @@ void compute_return_stmt__CoulangInterpreter(const CoulangStmt *stmt) {
 }
 
 void compute_while_stmt__CoulangInterpreter(const CoulangStmt *stmt) {
-  while (true) {
+  CoulangInterpreterCallFrame *current_frame = CURRENT_FRAME();
+
+  while (!is_initialized__CoulangValue(&current_frame->return_value)) {
     CoulangValue value =
         compute_value_from_expr__CoulangInterpreter(stmt->while_.cond);
 
