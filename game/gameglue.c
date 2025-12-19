@@ -31,8 +31,12 @@ typedef struct {
 
 typedef struct {
   Position position;
-  int speed;
 } Missile;
+
+typedef struct {
+  Position position;
+  int hp;
+} Asteroid;
 
 Missile *InitMissile(int x, int y) {
   Missile *missile = COULANG_ALLOC(sizeof(Missile));
@@ -43,7 +47,24 @@ Missile *InitMissile(int x, int y) {
 
 void DeinitMissile(Missile *missile) { free(missile); }
 
-void UpdatePosition(Missile *missile) { missile->position.y -= 1; }
+void UpdatePosition_Missile(Missile *missile) { missile->position.y--; }
 
-int GetPositionX(Missile *missile) { return missile->position.x; }
-int GetPositionY(Missile *missile) { return missile->position.y; }
+int GetPositionX_Missile(Missile *missile) { return missile->position.x; }
+int GetPositionY_Missile(Missile *missile) { return missile->position.y; }
+
+Asteroid *InitAsteroid(int x, int y, int hp) {
+  Asteroid *asteroid = COULANG_ALLOC(sizeof(Asteroid));
+  asteroid->position.x = x;
+  asteroid->position.y = y;
+  asteroid->hp = hp;
+  return asteroid;
+}
+
+void DeinitAsteroid(Asteroid *asteroid) { free(asteroid); }
+
+void UpdatePosition_Asteroid(Asteroid *asteroid) { asteroid->position.y++; }
+
+int GetPositionX_Asteroid(Asteroid *asteroid) { return asteroid->position.x; }
+int GetPositionY_Asteroid(Asteroid *asteroid) { return asteroid->position.y; }
+int GetHP_Asteroid(Asteroid *asteroid) { return asteroid->hp; }
+void TakeHit_Asteroid(Asteroid *asteroid) { asteroid->hp--; }
