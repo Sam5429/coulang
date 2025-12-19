@@ -23,17 +23,20 @@
 #ifndef COULANG_MACROS_H
 #define COULANG_MACROS_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #define COULANG_ERROR(message, ...)                                            \
   fprintf(stderr, "Error(%s:%d): " message "\n", __FILE__, __LINE__,           \
           ##__VA_ARGS__);                                                      \
   exit(1);
 
-#define COULANG_UNREACHABLE(message) \
-	fprintf(stderr, "Unreachable(%s:%d): "message"\n", __FILE__, __LINE__); \
-	exit(1);
+#define COULANG_UNREACHABLE(message)                                           \
+  fprintf(stderr, "Unreachable(%s:%d): " message "\n", __FILE__, __LINE__);    \
+  exit(1);
 
 #define COULANG_INTERPRETER_ERROR(message, ...)                                \
-  fprintf(stderr, "Error: " message "\n", ##__VA_ARGS__);                       \
+  fprintf(stderr, "Error: " message "\n", ##__VA_ARGS__);                      \
   exit(1);
 
 #define COULANG_F_ALLOC(f, ...)                                                \

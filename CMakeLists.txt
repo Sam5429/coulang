@@ -35,3 +35,6 @@ target_link_libraries(coulang dl)
 add_library(rayglue SHARED ${CMAKE_SOURCE_DIR}/game/rayglue.c)
 target_include_directories(rayglue PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(rayglue raylib)
+
+add_library(gameglue SHARED ${CMAKE_SOURCE_DIR}/game/gameglue.c)
+target_include_directories(gameglue PRIVATE ${CMAKE_SOURCE_DIR}/include)
