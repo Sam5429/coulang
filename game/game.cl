@@ -38,7 +38,13 @@ load "librayglue"
 	# void SetTargetFPS(int fps);
 	SetTargetFPS int,
     # bool IsKeyPressed2(int key);
-	IsKeyPressed2 int
+	IsKeyPressed2 int,
+	# Texture2D *LoadTexturePtr(const char *fileName);
+	LoadTexturePtr ptr,
+	# void UnloadTexturePtr(Texture2D *texture);
+	UnloadTexturePtr int,
+	# void DrawTexturePtr(Texture2D *texture, int posX, int posY, unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+	DrawTexturePtr int
 
 val KEY_RIGHT int = 262
 val KEY_LEFT int = 263
@@ -49,12 +55,13 @@ val window_width int = 700
 val window_height int = 700
 val plane_width int = 30
 val plane_height int = 30
+val ship_texture ptr = 0
 val plane_x int = 0
 val plane_y int = window_height - plane_height
 
 fn draw() int {
 	ClearBackgroundRGBA(0, 0, 0, 255)
-	DrawRectangleRGBA(plane_x, plane_y, plane_width, plane_height, 230, 41, 55, 255)
+	DrawTexturePtr(ship_texture, plane_x, plane_y, 255, 255, 255, 255)
 
 	return 0
 }
@@ -84,6 +91,8 @@ fn main() int {
 
 	SetTargetFPS(60)
 
+	ship_texture = LoadTexturePtr("game/asset/vaisseau.png")
+
 	while !WindowShouldClose() {
 		handle_events()
 
@@ -92,6 +101,7 @@ fn main() int {
 		EndDrawing()
 	}
 
+	UnloadTexturePtr(ship_texture)
 	CloseWindow()
 
 	return 0
