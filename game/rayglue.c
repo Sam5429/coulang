@@ -48,6 +48,20 @@ bool IsKeyPressed2(int key) {
   return IsKeyPressed(key) || IsKeyPressedRepeat(key);
 }
 
+int IsKeyHold(float deltaTime) {
+  static float tempsMaintenu = 0.0f;
+  static bool estEnfoncee = false;
+  if (IsKeyPressed2(KEY_SPACE)) {
+    tempsMaintenu += deltaTime;
+    estEnfoncee = true;
+  } else {
+    tempsMaintenu = 0.0f;
+    estEnfoncee = false;
+  }
+
+  return estEnfoncee && (tempsMaintenu >= 2.0f) ? 1 : 0;
+}
+
 Texture2D *LoadTexturePtr(const char *fileName) {
   Texture2D *texture_ptr = COULANG_ALLOC(sizeof(Texture2D));
 

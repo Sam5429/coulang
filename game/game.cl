@@ -22,7 +22,8 @@
 
 load "libc.so"
 	printf int,
-	puts int
+	puts int,
+	rand int
 
 load "librayglue"
 	# void InitWindow(int width, int height, const char *title);
@@ -66,9 +67,14 @@ load "librayglue"
 	#int GetMousePositionY()
 	GetMousePositionY int,
 	#int IsMouseClicked()
-	IsMouseClicked int
+	IsMouseClicked int,
+	#float GetFrameTime()
+	GetFrameTime float,
+	#int IsKeyHold(float time)
+	IsKeyHold int
+
 load "libgameglue"
-	# Missile* InitMissile(int x, int y)
+	# Missile* InitMissile(int x, int y, int puissance)
 	InitMissile ptr,
 	# void UpdatePosition_Missile(Missile* missile)
 	UpdatePosition_Missile int,
@@ -76,6 +82,8 @@ load "libgameglue"
 	GetPositionX_Missile int,
 	# int GetPositionY_Missile(Missile* missile)
 	GetPositionY_Missile int,
+	# int GetPuissance_Missile(Missile* missile)
+	GetPuissance_Missile int, 
 	# void DeinitMissile(Missile* missile)
 	DeinitMissile int,
 	# Asteroid* InitAsteroid(int x, int y)
@@ -90,7 +98,7 @@ load "libgameglue"
 	GetHP_Asteroid int,
 	# void DeinitAsteroid(Asteroid* asteroid)
 	DeinitAsteroid int,
-	# void TakeHit_Asteroid(Asteroid* asteroid)
+	# void TakeHit_Asteroid(Asteroid* asteroid, int degas)
 	TakeHit_Asteroid int
 
 val KEY_RIGHT int = 262
@@ -110,7 +118,8 @@ val ship_hp int = 3
 
 val missile_width int = 0
 val missile_height int = 0
-val missile_texture ptr = 0
+val missile_bleu_texture ptr = 0
+val missile_rouge_texture ptr = 0
 
 val asteroid_width int = 0
 val asteroid_height int = 0
@@ -155,11 +164,11 @@ fn get_missiles_free_indx() int {
 	return -1
 }
 
-fn spawn_missile(positionX int, positionY int) int {
+fn spawn_missile(positionX int, positionY int, puissance int) int {
 	val indx_free int = get_missiles_free_indx()
 
 	if indx_free != (-1) {
-		missiles[indx_free] = InitMissile(positionX, positionY)
+		missiles[indx_free] = InitMissile(positionX, positionY, puissance)
 		return 0
 	}
 	return -1
@@ -225,10 +234,7 @@ fn has_asteroid() int {
 
 # create a line of asteroid
 fn generate_asteroid() int {
-	if has_asteroid() {
-		return 0
-	}
-	val pos_x int = 0
+	val pos_x int = (rand() % (700 - asteroid_width))
 	while pos_x < window_width {
 		spawn_asteroid(pos_x, 0)
 		pos_x = (pos_x + (asteroid_width-2))
@@ -300,7 +306,7 @@ fn tcheck_colision() int {
 					val missilePosY int = GetPositionY_Missile(missiles[j])
 					if colliding(missilePosX, missilePosY, missile_height, missile_width, asteroidPosX, asteroidPosY, asteroid_height, asteroid_width) {
 						PlaySoundPtr(porouuuuu_sound)
-						TakeHit_Asteroid(asteroids[i])
+						TakeHit_Asteroid(asteroids[i], GetPuissance_Missile(missiles[j]))
 						DeinitMissile(missiles[j])
 						missiles[j] = 0
 						score = (score + 10)
@@ -327,7 +333,11 @@ fn drawMissile() int {
 		if missiles[i] != 0 {
 			val missile_x int = GetPositionX_Missile(missiles[i])
 			val missile_y int = GetPositionY_Missile(missiles[i])
-			DrawTexturePtr(missile_texture, missile_x, missile_y, 255, 255, 255, 255)
+			if GetPuissance_Missile(missiles[i]) == 3 {
+				DrawTexturePtr(missile_bleu_texture, missile_x, missile_y, 255, 255, 255, 255)
+			} else {
+				DrawTexturePtr(missile_rouge_texture, missile_x, missile_y, 255, 255, 255, 255)
+			}
 		}
 		i = (i + 1)
 	}
@@ -407,8 +417,13 @@ fn handle_events() int {
     }
 
     if IsKeyPressed2(KEY_SPACE) {
-		spawn_missile((ship_x + (ship_width/2)), ship_y - 20)
+		spawn_missile((ship_x + (ship_width/2)), ship_y - 20, 1)
 		PlaySoundPtr(piou_aigue_sound)
+	}
+
+	if IsKeyPressed2(KEY_UP) {
+		spawn_missile((ship_x + (ship_width/2)), ship_y - 20, 3)
+		PlaySoundPtr(piou_grave_sound)
 	}
 
 	return 0
@@ -478,9 +493,10 @@ fn main() int {
 	ship_height = TextureHeight(ship_texture)#
 	ship_y = (window_height - ship_height)
 
-	missile_texture = LoadTexturePtr("game/asset/misil1.png")
-	missile_width = TextureWidth(missile_texture)
-	missile_height = TextureHeight(missile_texture)
+	missile_rouge_texture = LoadTexturePtr("game/asset/missile_rouge.png")
+	missile_bleu_texture = LoadTexturePtr("game/asset/missile_bleu.png")
+	missile_width = TextureWidth(missile_rouge_texture)
+	missile_height = TextureHeight(missile_rouge_texture)
 
 	asteroid_texture_easy = LoadTexturePtr("game/asset/asteroid_easy.png")
 	asteroid_width = TextureWidth(asteroid_texture_easy)
@@ -508,6 +524,7 @@ fn main() int {
 	numbers_texture[5] = LoadTexturePtr("game/asset/numbers/5.png")
 	numbers_texture[6] = LoadTexturePtr("game/asset/numbers/6.png")
 	numbers_texture[7] = LoadTexturePtr("game/asset/numbers/7.png")
+				
 	numbers_texture[8] = LoadTexturePtr("game/asset/numbers/8.png")
 	numbers_texture[9] = LoadTexturePtr("game/asset/numbers/9.png")
 
@@ -531,7 +548,8 @@ fn main() int {
 	}
 
 	UnloadTexturePtr(ship_texture)
-	UnloadTexturePtr(missile_texture)
+	UnloadTexturePtr(missile_rouge_texture)
+	UnloadTexturePtr(missile_bleu_texture)
 	UnloadTexturePtr(asteroid_texture_easy)
 	UnloadTexturePtr(asteroid_texture_mid)
 	UnloadTexturePtr(asteroid_texture_hard)
