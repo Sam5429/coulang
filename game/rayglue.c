@@ -90,3 +90,8 @@ Sound *LoadSoundPtr(const char *fileName)
 void PlaySoundPtr(Sound *sound) {
 	PlaySound(*sound);
 }
+
+void UnloadSoundPtr(Sound *sound) {
+	UnloadSound(*sound);
+	free(sound);
+}

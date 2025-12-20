@@ -49,7 +49,7 @@ load "librayglue"
 	UnloadTexturePtr int,
 	# void DrawTexturePtr(Texture2D *texture, int posX, int posY, unsigned char r, unsigned char g, unsigned char b, unsigned char a);
 	DrawTexturePtr int,
-	# int TextureWidth(Texture2D *texture)
+	# int TextureWidth(Texture2D *texture)prout_asteroid.mp3
 	TextureWidth int,
 	# int TextureHeight(Texture2D *texture)
 	TextureHeight int,
@@ -58,7 +58,9 @@ load "librayglue"
 	# Sound *LoadSoundPtr(const char *fileName);
 	LoadSoundPtr ptr,
 	# void PlaySoundPtr(Sound *sound);
-	PlaySoundPtr int
+	PlaySoundPtr int,
+	# void UnloadSoundPtr(Sound *sound);
+	UnloadSoundPtr int
 
 load "libgameglue"
 	# Missile* InitMissile(int x, int y)
@@ -122,6 +124,7 @@ val asteroids list = [0, 0, 0, 0, 0, 0]
 val piou_aigue_sound ptr = 0
 val piou_grave_sound ptr = 0
 val porouuuuu_sound ptr = 0
+val prout_asteroid_sound ptr = 0
 
 # return a number between 0 and 9 if there is a index not use
 # return -1 if not
@@ -257,6 +260,7 @@ fn tcheck_colision() int {
 				if (ship_x < (asteroidPosX + asteroid_width)) {
 					if (asteroidPosY < (ship_y + ship_height)) {
 						if (ship_y < (asteroidPosY + asteroid_height)) {
+							PlaySoundPtr(prout_asteroid_sound)
 							DeinitAsteroid(asteroids[i])
 							asteroids[i] = 0
 							ship_hp = (ship_hp - 1)
@@ -420,6 +424,7 @@ fn main() int {
 	piou_aigue_sound = LoadSoundPtr("game/asset/piou_aigue_1.mp3")
 	piou_grave_sound = LoadSoundPtr("game/asset/piou_grave.mp3")
 	porouuuuu_sound = LoadSoundPtr("game/asset/porouuuuu_1.mp3")
+	prout_asteroid_sound = LoadSoundPtr("game/asset/prout_asteroid.mp3")
 
 	val isGameOver int = 0
 
@@ -437,6 +442,10 @@ fn main() int {
 	UnloadTexturePtr(asteroid_texture_easy)
 	UnloadTexturePtr(asteroid_texture_mid)
 	UnloadTexturePtr(asteroid_texture_hard)
+	UnloadSoundPtr(piou_aigue_sound)
+	UnloadSoundPtr(piou_grave_sound)
+	UnloadSoundPtr(porouuuuu_sound)
+	UnloadSoundPtr(prout_asteroid_sound)
 	CloseWindow()
 
 	return 0
