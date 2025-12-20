@@ -84,9 +84,7 @@ load "libgameglue"
 	# void DeinitAsteroid(Asteroid* asteroid)
 	DeinitAsteroid int,
 	# void TakeHit_Asteroid(Asteroid* asteroid)
-	TakeHit_Asteroid int,
-	# int PrintMenu()
-	PrintMenu int
+	TakeHit_Asteroid int
 
 val KEY_RIGHT int = 262
 val KEY_LEFT int = 263
@@ -370,7 +368,7 @@ fn handle_events() int {
 	return 0
 }
 
-fn gameLoop() int {
+fn gameTurn() int {
 	if ship_hp <= 0 {
 		return 1
 	}
@@ -429,9 +427,8 @@ fn main() int {
 
 		if isGameOver {
 			drawEnd()
-			isGameOver = gameLoop()
 		} else {
-			isGameOver = gameLoop()
+			isGameOver = gameTurn()
 		}
 	}
 
