@@ -77,3 +77,16 @@ int TextureWidth(Texture2D *texture) {
 int TextureHeight(Texture2D *texture) {
 	return texture->height;
 }
+
+Sound *LoadSoundPtr(const char *fileName)
+{
+	Sound *sound_ptr = COULANG_ALLOC(sizeof(Sound));
+
+	*sound_ptr = LoadSound(fileName);
+
+	return sound_ptr;
+}
+
+void PlaySoundPtr(Sound *sound) {
+	PlaySound(*sound);
+}
