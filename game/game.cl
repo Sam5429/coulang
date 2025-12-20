@@ -80,7 +80,7 @@ load "libgameglue"
 	DeinitMissile int,
 	# Asteroid* InitAsteroid(int x, int y)
 	InitAsteroid ptr,
-	# void UpdatePosition_Asteroid(Asteroid* asteroid)
+	# void UpdatePosition_Asteroid(Asteroid* asteroid, int speed)
 	UpdatePosition_Asteroid int,
 	# int GetPositionX(Asteroid* asteroid)
 	GetPositionX_Asteroid int,
@@ -117,6 +117,7 @@ val asteroid_height int = 0
 val asteroid_texture_easy ptr = 0
 val asteroid_texture_mid ptr = 0
 val asteroid_texture_hard ptr = 0
+val asteroid_speed int = 1
 
 val end_texture ptr = 0
 
@@ -239,7 +240,7 @@ fn updatePosition_Asteroid() int {
 	val i int = 0
 	while i<asteroids_num {
 		if asteroids[i] != 0 {
-			UpdatePosition_Asteroid(asteroids[i])
+			UpdatePosition_Asteroid(asteroids[i], asteroid_speed)
 		}
 		i = (i+1)
 	}
@@ -304,6 +305,16 @@ fn tcheck_colision() int {
 						DeinitMissile(missiles[j])
 						missiles[j] = 0
 						score = (score + 10)
+
+                        val new_asteroid_speed int = score / 100
+
+                        if new_asteroid_speed < 1 {
+                            new_asteroid_speed = 1
+                        } elif new_asteroid_speed > 10 {
+                            new_asteroid_speed = 10
+                        }
+
+                        asteroid_speed = new_asteroid_speed
 					}
 				}
 				j = (j+1)
@@ -494,7 +505,7 @@ fn main() int {
 	but_restart_texture = LoadTexturePtr("game/asset/restart_1.png")
 	but_restart_width = TextureWidth(but_restart_texture)
 	but_restart_heigt = TextureHeight(but_restart_texture)
-	
+
 
 	piou_aigue_sound = LoadSoundPtr("game/asset/piou_aigue_1.mp3")
 	piou_grave_sound = LoadSoundPtr("game/asset/piou_grave.mp3")

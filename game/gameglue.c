@@ -62,7 +62,7 @@ Asteroid *InitAsteroid(int x, int y, int hp) {
 
 void DeinitAsteroid(Asteroid *asteroid) { free(asteroid); }
 
-void UpdatePosition_Asteroid(Asteroid *asteroid) { asteroid->position.y++; }
+void UpdatePosition_Asteroid(Asteroid *asteroid, int speed) { asteroid->position.y += speed; }
 
 int GetPositionX_Asteroid(Asteroid *asteroid) { return asteroid->position.x; }
 int GetPositionY_Asteroid(Asteroid *asteroid) { return asteroid->position.y; }
