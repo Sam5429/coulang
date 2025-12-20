@@ -26,72 +26,74 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void ClearBackgroundRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
-{
-	Color color = { .r = r, .g = g, .b = b, .a = a };
+void ClearBackgroundRGBA(unsigned char r, unsigned char g, unsigned char b,
+                         unsigned char a) {
+  Color color = {.r = r, .g = g, .b = b, .a = a};
 
-	ClearBackground(color);
+  ClearBackground(color);
 }
 
-void DrawRectangleRGBA(int posX, int posY, int width, int height, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
-{
-	Color color = { .r = r, .g = g, .b = b, .a = a };
+void DrawRectangleRGBA(int posX, int posY, int width, int height,
+                       unsigned char r, unsigned char g, unsigned char b,
+                       unsigned char a) {
+  Color color = {.r = r, .g = g, .b = b, .a = a};
 
-	DrawRectangle(posX, posY, width, height, color);
+  DrawRectangle(posX, posY, width, height, color);
 }
 
 // NOTE: For some reason IsKeyDown return garbage,
 // so we will define IsKeyPressed2, to reproduce
 // the behaviour of this function.
-bool IsKeyPressed2(int key)
-{
-	return IsKeyPressed(key) || IsKeyPressedRepeat(key);
+bool IsKeyPressed2(int key) {
+  return IsKeyPressed(key) || IsKeyPressedRepeat(key);
 }
 
-Texture2D *LoadTexturePtr(const char *fileName)
-{
-	Texture2D *texture_ptr = COULANG_ALLOC(sizeof(Texture2D));
+Texture2D *LoadTexturePtr(const char *fileName) {
+  Texture2D *texture_ptr = COULANG_ALLOC(sizeof(Texture2D));
 
-	*texture_ptr = LoadTexture(fileName);
+  *texture_ptr = LoadTexture(fileName);
 
-	return texture_ptr;
+  return texture_ptr;
 }
 
-void UnloadTexturePtr(Texture2D *texture)
-{
-	UnloadTexture(*texture);
-	free(texture);
+void UnloadTexturePtr(Texture2D *texture) {
+  UnloadTexture(*texture);
+  free(texture);
 }
 
-void DrawTexturePtr(Texture2D *texture, int posX, int posY, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
-{
-	Color color = { .r = r, .g = g, .b = b, .a = a };
+void DrawTexturePtr(Texture2D *texture, int posX, int posY, unsigned char r,
+                    unsigned char g, unsigned char b, unsigned char a) {
+  Color color = {.r = r, .g = g, .b = b, .a = a};
 
-	DrawTexture(*texture, posX, posY, color);
+  DrawTexture(*texture, posX, posY, color);
 }
 
-int TextureWidth(Texture2D *texture) {
-	return texture->width;
+int TextureWidth(Texture2D *texture) { return texture->width; }
+
+int TextureHeight(Texture2D *texture) { return texture->height; }
+
+Sound *LoadSoundPtr(const char *fileName) {
+  Sound *sound_ptr = COULANG_ALLOC(sizeof(Sound));
+
+  *sound_ptr = LoadSound(fileName);
+
+  return sound_ptr;
 }
 
-int TextureHeight(Texture2D *texture) {
-	return texture->height;
-}
-
-Sound *LoadSoundPtr(const char *fileName)
-{
-	Sound *sound_ptr = COULANG_ALLOC(sizeof(Sound));
-
-	*sound_ptr = LoadSound(fileName);
-
-	return sound_ptr;
-}
-
-void PlaySoundPtr(Sound *sound) {
-	PlaySound(*sound);
-}
+void PlaySoundPtr(Sound *sound) { PlaySound(*sound); }
 
 void UnloadSoundPtr(Sound *sound) {
-	UnloadSound(*sound);
-	free(sound);
+  UnloadSound(*sound);
+  free(sound);
+}
+
+int GetMousePositionX() { return GetMousePosition().x; }
+int GetMousePositionY() { return GetMousePosition().y; }
+
+int IsMouseClicked() {
+  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    return 1;
+  } else {
+    return 0;
+  }
 }

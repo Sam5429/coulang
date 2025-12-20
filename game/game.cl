@@ -60,8 +60,13 @@ load "librayglue"
 	# void PlaySoundPtr(Sound *sound);
 	PlaySoundPtr int,
 	# void UnloadSoundPtr(Sound *sound);
-	UnloadSoundPtr int
-
+	UnloadSoundPtr int,
+	# int GetMousePositionX()
+	GetMousePositionX int,
+	#int GetMousePositionY()
+	GetMousePositionY int,
+	#int IsMouseClicked()
+	IsMouseClicked int
 load "libgameglue"
 	# Missile* InitMissile(int x, int y)
 	InitMissile ptr,
@@ -114,6 +119,12 @@ val asteroid_texture_mid ptr = 0
 val asteroid_texture_hard ptr = 0
 
 val end_texture ptr = 0
+
+val but_restart_texture ptr = 0
+val but_restart_width int = 0
+val but_restart_heigt int = 0
+val but_restart_x int = 200
+val but_restart_y int = 400
 
 val missiles_num int = 10
 val missiles list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -249,6 +260,19 @@ fn del_asteroid() int {
 	}
 }
 
+fn colliding(x1 int, y1 int, h1 int, w1 int, x2 int, y2 int, h2 int, w2 int) int {
+	if (x1 < (x2 + w2)) {
+		if (x2 < (x1 + w1)) {
+			if (y1 < (y2 + h2)) {
+				if (y2 < (y1 + h1)) {
+					return 1
+				}
+			}
+		}
+	}
+	return 0
+}
+
 fn tcheck_colision() int {
 	val i int = 0
 	while i<asteroids_num {
@@ -256,17 +280,12 @@ fn tcheck_colision() int {
 			val asteroidPosX int = GetPositionX_Asteroid(asteroids[i])
 			val asteroidPosY int = GetPositionY_Asteroid(asteroids[i])
 			# colision avec le vaisseau
-			if (asteroidPosX < (ship_x + ship_width)) {
-				if (ship_x < (asteroidPosX + asteroid_width)) {
-					if (asteroidPosY < (ship_y + ship_height)) {
-						if (ship_y < (asteroidPosY + asteroid_height)) {
-							PlaySoundPtr(prout_asteroid_sound)
-							DeinitAsteroid(asteroids[i])
-							asteroids[i] = 0
-							ship_hp = (ship_hp - 1)
-						}
-					}
-				}
+			if colliding(asteroidPosX, asteroidPosY, asteroid_height, asteroid_width, ship_x, ship_y, ship_height, ship_width) {
+				PlaySoundPtr(prout_asteroid_sound)
+				DeinitAsteroid(asteroids[i])
+				asteroids[i] = 0
+				ship_hp = (ship_hp - 1)
+
 			}
 
 			# colision avec les missiles
@@ -275,17 +294,11 @@ fn tcheck_colision() int {
 				if missiles[j] != 0 {
 					val missilePosX int = GetPositionX_Missile(missiles[j])
 					val missilePosY int = GetPositionY_Missile(missiles[j])
-					if (asteroidPosX < (missilePosX + missile_width)) {
-						if (missilePosX < (asteroidPosX + asteroid_width)) {
-							if (asteroidPosY < (missilePosY + missile_height)) {
-								if (missilePosY < (asteroidPosY + asteroid_height)) {
-									PlaySoundPtr(porouuuuu_sound)
-									TakeHit_Asteroid(asteroids[i])
-									DeinitMissile(missiles[j])
-									missiles[j] = 0
-								}
-							}
-						}
+					if colliding(missilePosX, missilePosY, missile_height, missile_width, asteroidPosX, asteroidPosY, asteroid_height, asteroid_width) {
+						PlaySoundPtr(porouuuuu_sound)
+						TakeHit_Asteroid(asteroids[i])
+						DeinitMissile(missiles[j])
+						missiles[j] = 0
 					}
 				}
 				j = (j+1)
@@ -342,6 +355,7 @@ fn drawEnd() int {
 	BeginDrawing()
 		ClearBackgroundRGBA(0, 0, 0, 255)
 		DrawTexturePtr(end_texture, 0, 0, 255, 255, 255, 255)
+		DrawTexturePtr(but_restart_texture, but_restart_x, but_restart_y, 255, 255, 255)
 	EndDrawing()
 
 	return 0
@@ -397,6 +411,30 @@ fn gameTurn() int {
 	return 0
 }
 
+fn resetupVar() int {
+	val i int = 0
+	while i<asteroids_num {
+		if asteroids[i] != 0 {
+			DeinitAsteroid(asteroids[i])
+			asteroids[i] = 0
+		}
+		i = (i+1)
+	}
+
+	i = 0
+	while i<missiles_num {
+		if missiles[i] != 0 {
+			DeinitMissile(missiles[i])
+			missiles[i] = 0
+		}
+		i = (i+1)
+	}
+
+	ship_hp = 3
+	ship_x = 0
+	ship_y = (window_height - ship_height)
+}
+
 
 fn main() int {
 	InitWindow(window_width, window_height, "Game")
@@ -406,7 +444,7 @@ fn main() int {
 
 	ship_texture = LoadTexturePtr("game/asset/vaisseau.png")
 	ship_width = TextureWidth(ship_texture)
-	ship_height = TextureHeight(ship_texture)
+	ship_height = TextureHeight(ship_texture)#
 	ship_y = (window_height - ship_height)
 
 	missile_texture = LoadTexturePtr("game/asset/misil1.png")
@@ -419,7 +457,13 @@ fn main() int {
 
 	asteroid_texture_mid = LoadTexturePtr("game/asset/asteroid_medium.png")
 	asteroid_texture_hard = LoadTexturePtr("game/asset/asteroid_hard.png")
+
 	end_texture = LoadTexturePtr("game/asset/fin.png")
+
+	but_restart_texture = LoadTexturePtr("game/asset/restart_1.png")
+	but_restart_width = TextureWidth(but_restart_texture)
+	but_restart_heigt = TextureHeight(but_restart_texture)
+	
 
 	piou_aigue_sound = LoadSoundPtr("game/asset/piou_aigue_1.mp3")
 	piou_grave_sound = LoadSoundPtr("game/asset/piou_grave.mp3")
@@ -432,6 +476,15 @@ fn main() int {
 
 		if isGameOver {
 			drawEnd()
+			val mousePosX int = GetMousePositionX()
+			val mousePosY int = GetMousePositionY()
+			if IsMouseClicked() {
+				if colliding(mousePosX, mousePosY, 1, 1, but_restart_x, but_restart_y, but_restart_heigt, but_restart_width) {
+					printf("lets do it again")
+					resetupVar()
+					isGameOver = 0
+				}
+			}
 		} else {
 			isGameOver = gameTurn()
 		}
