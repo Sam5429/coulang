@@ -54,6 +54,8 @@
 .extern init_ptr__CoulangValue
 .extern abort
 
+// FIXME: I probably messed up the floating parameters since we
+// haven't had time to test it yet.
 run__SymbolRunner:
 	push rbp
 	mov rbp, rsp	
@@ -161,7 +163,7 @@ run__SymbolRunner:
 	inc QWORD PTR [rbp - 48]
 	jmp .end_loop_params
 
-.loop_f_params:
+.loop_f_params:	
 	// NOTE: use rdi register defined into loop_params
 	pop rdi
 	call get_float_as_c_value__CoulangValue
