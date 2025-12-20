@@ -93,6 +93,7 @@ val ship_height int = 0
 val ship_texture ptr = 0
 val ship_x int = 0
 val ship_y int = 0
+val ship_hp int = 3
 
 val missile_width int = 0
 val missile_height int = 0
@@ -103,6 +104,8 @@ val asteroid_height int = 0
 val asteroid_texture_easy ptr = 0
 val asteroid_texture_mid ptr = 0
 val asteroid_texture_hard ptr = 0
+
+val end_texture ptr = 0
 
 val missiles_num int = 10
 val missiles list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -181,8 +184,22 @@ fn spawn_asteroid(positionX int, positionY int) int {
 	return -1
 }
 
+fn has_asteroid() int {
+	val i int = 0
+	while i<asteroids_num {
+		if asteroids[i] != 0 {
+			return 1
+		}
+		i = (i+1)	
+	}
+	return 0
+}
+
 # create a line of asteroid
 fn generate_asteroid() int {
+	if has_asteroid() {
+		return 0
+	}
 	val pos_x int = 0
 	while pos_x < window_width {
 		spawn_asteroid(pos_x, 0)
@@ -207,12 +224,10 @@ fn del_asteroid() int {
 		# if there out of the screen
 		if asteroids[i] != 0 {
 			if GetPositionY_Asteroid(asteroids[i]) > window_height {
-				printf("je sup asteroid %d", i)
 				DeinitAsteroid(asteroids[i])
 				asteroids[i] = 0
 			}
 			elif GetHP_Asteroid(asteroids[i]) <= 0 {
-				printf("je tue asteroid %d", i)
 				DeinitAsteroid(asteroids[i])
 				asteroids[i] = 0
 			}
@@ -234,7 +249,7 @@ fn tcheck_colision() int {
 						if (ship_y < (asteroidPosY + asteroid_height)) {
 							DeinitAsteroid(asteroids[i])
 							asteroids[i] = 0
-							printf("ship took a hit\n")
+							ship_hp = (ship_hp - 1)
 						}
 					}
 				}
@@ -308,6 +323,13 @@ fn drawAsteroid() int {
 	return 0
 }
 
+fn drawEnd() int {
+	ClearBackgroundRGBA(0, 0, 0, 255)
+	DrawTexturePtr(end_texture, window_width, window_height, 255, 255, 255, 255)
+
+	return 0
+}
+
 fn handle_events() int {
     if IsKeyPressed2(KEY_RIGHT) {
 		if ship_x < (window_width - ship_width) {
@@ -355,8 +377,15 @@ fn main() int {
 
 	asteroid_texture_hard = LoadTexturePtr("game/asset/asteroid_hard.png")
 
+	end_texture = LoadTexturePtr("game/asset/fin.png")
+
 
 	while !WindowShouldClose() {
+		if ship_hp <= 0 {
+			printf("jeu fini panic pas pelo t mort")
+			return 0
+		}
+
 		handle_events()
 
 		updatePosition_Missile()
@@ -374,7 +403,6 @@ fn main() int {
 			drawMissile()
 			drawAsteroid()
 		EndDrawing()
-
 	}
 
 	UnloadTexturePtr(ship_texture)
