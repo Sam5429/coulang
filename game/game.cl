@@ -126,6 +126,10 @@ val piou_grave_sound ptr = 0
 val porouuuuu_sound ptr = 0
 val prout_asteroid_sound ptr = 0
 
+val score int = 0
+
+val numbers_texture list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
 # return a number between 0 and 9 if there is a index not use
 # return -1 if not
 fn get_missiles_free_indx() int {
@@ -283,6 +287,7 @@ fn tcheck_colision() int {
 									TakeHit_Asteroid(asteroids[i])
 									DeinitMissile(missiles[j])
 									missiles[j] = 0
+									score = (score + 10)
 								}
 							}
 						}
@@ -335,6 +340,29 @@ fn drawAsteroid() int {
 		}
 		i = (i + 1)
 	}
+	return 0
+}
+
+fn drawScore() int {
+	val score_count int = score
+	val number_count int = 0
+
+	while score_count >= 0 {
+		val current_digit int = score_count % 10
+		val texture_ptr ptr = numbers_texture[current_digit]
+		val posX int = window_width - ((number_count + 1) * TextureWidth(texture_ptr)) - 10
+		val posY int = 10
+
+		DrawTexturePtr(texture_ptr, posX, posY, 255, 255, 255, 255)
+
+		score_count = (score_count / 10)
+		number_count = (number_count + 1)
+
+		if score_count == 0 {
+			return 0
+		}
+	}
+
 	return 0
 }
 
@@ -392,6 +420,7 @@ fn gameTurn() int {
 		drawShip()
 		drawMissile()
 		drawAsteroid()
+		drawScore()
 	EndDrawing()
 
 	return 0
@@ -425,11 +454,20 @@ fn main() int {
 	piou_grave_sound = LoadSoundPtr("game/asset/piou_grave.mp3")
 	porouuuuu_sound = LoadSoundPtr("game/asset/porouuuuu_1.mp3")
 	prout_asteroid_sound = LoadSoundPtr("game/asset/prout_asteroid.mp3")
+	numbers_texture[0] = LoadTexturePtr("game/asset/numbers/0.png")
+	numbers_texture[1] = LoadTexturePtr("game/asset/numbers/1.png")
+	numbers_texture[2] = LoadTexturePtr("game/asset/numbers/2.png")
+	numbers_texture[3] = LoadTexturePtr("game/asset/numbers/3.png")
+	numbers_texture[4] = LoadTexturePtr("game/asset/numbers/4.png")
+	numbers_texture[5] = LoadTexturePtr("game/asset/numbers/5.png")
+	numbers_texture[6] = LoadTexturePtr("game/asset/numbers/6.png")
+	numbers_texture[7] = LoadTexturePtr("game/asset/numbers/7.png")
+	numbers_texture[8] = LoadTexturePtr("game/asset/numbers/8.png")
+	numbers_texture[9] = LoadTexturePtr("game/asset/numbers/9.png")
 
 	val isGameOver int = 0
 
 	while !WindowShouldClose() {
-
 		if isGameOver {
 			drawEnd()
 		} else {
@@ -446,6 +484,16 @@ fn main() int {
 	UnloadSoundPtr(piou_grave_sound)
 	UnloadSoundPtr(porouuuuu_sound)
 	UnloadSoundPtr(prout_asteroid_sound)
+	UnloadTexturePtr(numbers_texture[0])
+	UnloadTexturePtr(numbers_texture[1])
+	UnloadTexturePtr(numbers_texture[2])
+	UnloadTexturePtr(numbers_texture[3])
+	UnloadTexturePtr(numbers_texture[4])
+	UnloadTexturePtr(numbers_texture[5])
+	UnloadTexturePtr(numbers_texture[6])
+	UnloadTexturePtr(numbers_texture[7])
+	UnloadTexturePtr(numbers_texture[8])
+	UnloadTexturePtr(numbers_texture[9])
 	CloseWindow()
 
 	return 0
