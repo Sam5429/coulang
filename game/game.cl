@@ -52,7 +52,13 @@ load "librayglue"
 	# int TextureWidth(Texture2D *texture)
 	TextureWidth int,
 	# int TextureHeight(Texture2D *texture)
-	TextureHeight int
+	TextureHeight int,
+	# void InitAudioDevice(void);
+	InitAudioDevice int,
+	# Sound *LoadSoundPtr(const char *fileName);
+	LoadSoundPtr ptr,
+	# void PlaySoundPtr(Sound *sound);
+	PlaySoundPtr int
 
 load "libgameglue"
 	# Missile* InitMissile(int x, int y)
@@ -112,6 +118,10 @@ val missiles list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 val asteroids_num int = 6
 val asteroids list = [0, 0, 0, 0, 0, 0]
+
+val piou_aigue_sound ptr = 0
+val piou_grave_sound ptr = 0
+val porouuuuu_sound ptr = 0
 
 # return a number between 0 and 9 if there is a index not use
 # return -1 if not
@@ -265,6 +275,7 @@ fn tcheck_colision() int {
 						if (missilePosX < (asteroidPosX + asteroid_width)) {
 							if (asteroidPosY < (missilePosY + missile_height)) {
 								if (missilePosY < (asteroidPosY + asteroid_height)) {
+									PlaySoundPtr(porouuuuu_sound)
 									TakeHit_Asteroid(asteroids[i])
 									DeinitMissile(missiles[j])
 									missiles[j] = 0
@@ -349,6 +360,7 @@ fn handle_events() int {
 
     if IsKeyPressed2(KEY_SPACE) {
 		spawn_missile((ship_x + (ship_width/2)), ship_y - 20)
+		PlaySoundPtr(piou_aigue_sound)
 	}
 
 	return 0
@@ -357,6 +369,7 @@ fn handle_events() int {
 
 fn main() int {
 	InitWindow(window_width, window_height, "Game")
+	InitAudioDevice()
 
 	SetTargetFPS(60)
 
@@ -374,11 +387,12 @@ fn main() int {
 	asteroid_height = TextureHeight(asteroid_texture_easy)
 
 	asteroid_texture_mid = LoadTexturePtr("game/asset/asteroid_medium.png")
-
 	asteroid_texture_hard = LoadTexturePtr("game/asset/asteroid_hard.png")
-
 	end_texture = LoadTexturePtr("game/asset/fin.png")
 
+	piou_aigue_sound = LoadSoundPtr("game/asset/piou_aigue_1.mp3")
+	piou_grave_sound = LoadSoundPtr("game/asset/piou_grave.mp3")
+	porouuuuu_sound = LoadSoundPtr("game/asset/porouuuuu_1.mp3")
 
 	while !WindowShouldClose() {
 		if ship_hp <= 0 {
