@@ -78,7 +78,9 @@ load "libgameglue"
 	# void DeinitAsteroid(Asteroid* asteroid)
 	DeinitAsteroid int,
 	# void TakeHit_Asteroid(Asteroid* asteroid)
-	TakeHit_Asteroid int
+	TakeHit_Asteroid int,
+	# int PrintMenu()
+	PrintMenu int
 
 val KEY_RIGHT int = 262
 val KEY_LEFT int = 263
@@ -324,8 +326,10 @@ fn drawAsteroid() int {
 }
 
 fn drawEnd() int {
-	ClearBackgroundRGBA(0, 0, 0, 255)
-	DrawTexturePtr(end_texture, window_width, window_height, 255, 255, 255, 255)
+	BeginDrawing()
+		ClearBackgroundRGBA(0, 0, 0, 255)
+		DrawTexturePtr(end_texture, 0, 0, 255, 255, 255, 255)
+	EndDrawing()
 
 	return 0
 }
@@ -350,6 +354,31 @@ fn handle_events() int {
     if IsKeyPressed2(KEY_SPACE) {
 		spawn_missile((ship_x + (ship_width/2)), ship_y - 20)
 	}
+
+	return 0
+}
+
+fn gameLoop() int {
+	if ship_hp <= 0 {
+		return 1
+	}
+
+	handle_events()
+	updatePosition_Missile()
+	updatePosition_Asteroid()
+
+	generate_asteroid()
+
+	tcheck_colision()
+
+	del_missiles()
+	del_asteroid()
+
+	BeginDrawing()
+		drawShip()
+		drawMissile()
+		drawAsteroid()
+	EndDrawing()
 
 	return 0
 }
@@ -379,30 +408,16 @@ fn main() int {
 
 	end_texture = LoadTexturePtr("game/asset/fin.png")
 
+	val isGameOver int = 0
 
 	while !WindowShouldClose() {
-		if ship_hp <= 0 {
-			printf("jeu fini panic pas pelo t mort")
-			return 0
+
+		if isGameOver {
+			drawEnd()
+			isGameOver = gameLoop()
+		} else {
+			isGameOver = gameLoop()
 		}
-
-		handle_events()
-
-		updatePosition_Missile()
-		updatePosition_Asteroid()
-
-		generate_asteroid()
-
-		tcheck_colision()
-
-		del_missiles()
-		del_asteroid()
-
-		BeginDrawing()
-			drawShip()
-			drawMissile()
-			drawAsteroid()
-		EndDrawing()
 	}
 
 	UnloadTexturePtr(ship_texture)
