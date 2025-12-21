@@ -151,6 +151,10 @@ val score int = 0
 
 val numbers_texture list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
+val heart_texture ptr = 0
+val heart_texture_width int = 0
+val heart_texture_height int = 0
+
 # return a number between 0 and 9 if there is a index not use
 # return -1 if not
 fn get_missiles_free_indx() int {
@@ -400,6 +404,21 @@ fn drawScore() int {
 	return 0
 }
 
+fn drawHeart() int {
+    val count int = 0
+    val posX int = 0
+    val posY int = 10
+
+    while count < ship_hp {
+        DrawTexturePtr(heart_texture, posX, posY, 255, 255, 255, 255)
+
+        count = (count + 1)
+        posX = (posX + heart_texture_width)
+    }
+
+    return 0
+}
+
 fn drawEnd() int {
 	BeginDrawing()
 		ClearBackgroundRGBA(0, 0, 0, 255)
@@ -461,6 +480,7 @@ fn gameTurn() int {
 		drawMissile()
 		drawAsteroid()
 		drawScore()
+        drawHeart()
 	EndDrawing()
 
 	return 0
@@ -539,6 +559,10 @@ fn main() int {
 	numbers_texture[8] = LoadTexturePtr("game/asset/numbers/8.png")
 	numbers_texture[9] = LoadTexturePtr("game/asset/numbers/9.png")
 
+    heart_texture = LoadTexturePtr("game/asset/heart.png")
+    heart_texture_width = TextureWidth(heart_texture)
+    heart_texture_height = TextureHeight(heart_texture)
+
 	val isGameOver int = 0
 
 	while !WindowShouldClose() {
@@ -578,6 +602,7 @@ fn main() int {
 	UnloadTexturePtr(numbers_texture[7])
 	UnloadTexturePtr(numbers_texture[8])
 	UnloadTexturePtr(numbers_texture[9])
+    UnloadTexturePtr(heart_texture)
 	CloseWindow()
 
 	return 0
