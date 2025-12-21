@@ -25,8 +25,12 @@ So here's the plan:
 - Parser
 - Interpreter
 
-That's basically all we need. In addition, there is a small additional
-difficulty: we are both university students and we have our final exams
+That's basically all we need. Also the language will be
+[GC](https://en.wikipedia.org/wiki/Garbage_collection_(computer_science))
+less, **really really** unsafe (probably more than C) and cursed.
+
+In addition, there is a small additional difficulty:
+we are both university students and we have our final exams
 during the jam, so we won't really have a whole week. But who cares?
 The goal is just to have fun and stay up all night as much as possible.
 
@@ -103,4 +107,46 @@ finished the day [here](https://github.com/Sam5429/coulang/commit/8d002204a72b2f
 
 ## 17th December
 
-...
+As explained above, we must write assembly code to be able to call the
+symbols that we load into the interpreter. So, basically, we must move
+the values that we pass to the functions to the right places while
+respecting the
+[C (x86_64) calling convention](https://en.wikipedia.org/wiki/X86_calling_conventions).
+
+After writing that, I managed to get the interpreter to work, in order
+to open a window via [raylib](https://github.com/raysan5/raylib).
+
+We've finished the day
+[here](https://github.com/Sam5429/coulang/commit/a6873e4e9deabf3e167b7644a2364f182289b58b).
+
+## 18th December night and 19th December early in the morning
+
+On that day, I fixed a bug in the assembly code, which was that I was pushing the
+parameters onto the stack in the wrong order.
+
+@Sam5429, took care of adding the game's first assets and coding its initial features,
+while I fixed the bugs he found and added new features.
+
+For example, a funny bug that @Sam5429 found was that we were computing expressions passed
+to a function call on the scope of the function being called, which caused an incorrect
+error message about a variable not being found.
+
+Here is an example of code that could trigger this bug, for the context:
+
+```
+load "libc.so" printf int
+
+fn add(x int) int {
+    printf("%d", x)
+}
+
+fn main() int {
+        if 1 {
+            val x int = 0
+            add(x)
+        }
+}
+```
+
+And the [fix](https://github.com/Sam5429/coulang/commit/82fb51f73cba27ec821b607dcf598c90e3952bcc)
+of this bug.
