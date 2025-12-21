@@ -119,15 +119,20 @@ to open a window via [raylib](https://github.com/raysan5/raylib).
 We've finished the day
 [here](https://github.com/Sam5429/coulang/commit/a6873e4e9deabf3e167b7644a2364f182289b58b).
 
-## 18th December night and 19th December early in the morning
+## 18th December night and 19th December
 
-On that day, I fixed a bug in the assembly code, which was that I was pushing the
-parameters onto the stack in the wrong order.
+First, on that day, I fixed a bug in the assembly code, which was that
+I was pushing the parameters onto the stack in the wrong order.
+
+We started discussing what kind of game we wanted to make, and we ended
+up expecting a game like
+[Space Invaders](https://en.wikipedia.org/wiki/Space_Invaders) (will
+be probably less good).
 
 @Sam5429, took care of adding the game's first assets and coding its initial features,
 while I fixed the bugs he found and added new features.
 
-For example, a funny bug that @Sam5429 found was that we were computing expressions passed
+For instance, a funny bug that @Sam5429 found was that we were computing expressions passed
 to a function call on the scope of the function being called, which caused an incorrect
 error message about a variable not being found.
 
@@ -150,3 +155,19 @@ fn main() int {
 
 And the [fix](https://github.com/Sam5429/coulang/commit/82fb51f73cba27ec821b607dcf598c90e3952bcc)
 of this bug.
+
+In short, to make the game, we chose to use raylib as specified, as it is a fairly easy library to
+learn. It was the first time we had used this library, so we took some time to read the
+documentation and code examples to familiarize ourselves with it.
+
+Since our language doesn't really have an option for creating structures, we had to create
+glue in C in order to adapt some of the raylib functions and perform the necessary operations
+on structures in C. After that, all we had to do was load them into
+the interpreter to be able to use them.
+
+At the end of the day @Sam5429 finished creating a collision system and basic ship movements,
+as well as asteroid generation.
+
+We're done [here](https://github.com/Sam5429/coulang/commit/bafcf2ff41ec86c17b760f32b9a914fbe5929b5e).
+
+## 20th December
