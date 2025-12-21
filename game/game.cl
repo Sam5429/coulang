@@ -352,9 +352,9 @@ fn tcheck_colision() int {
 	if colliding(health_icon_x, health_icon_y, health_icon_height, health_icon_widht, ship_x, ship_y, ship_height, ship_width) {
 		if ship_hp < 3 {
 			ship_hp = (ship_hp + 1)
-			health_icon_x = 0
-			health_icon_y = 0
 		}
+		health_icon_x = 0
+		health_icon_y = 0
 	} elif health_icon_y > window_height {
 		health_icon_y = 0
 		health_icon_x = 0
