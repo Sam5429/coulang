@@ -171,3 +171,13 @@ as well as asteroid generation.
 We're done [here](https://github.com/Sam5429/coulang/commit/bafcf2ff41ec86c17b760f32b9a914fbe5929b5e).
 
 ## 20th December
+
+On this day, the main goal was to finish the game, on time of course.
+@Sam5429, took care of creating new assets and creating the game's own sound effects.
+Then implement them in the game. It has an end-of-game screen and is responsible for
+randomly displaying asteroids and creating a new item to regain a life.
+
+For my part, I took care of adding a scoring system and adding them with the assets
+that @Sam5429 had made, as well as adding the number of lives remaining.
+
+Thanks to the creator of this jam, we had a great time.
