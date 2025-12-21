@@ -179,6 +179,11 @@ fn spawn_missile(positionX int, positionY int, puissance int) int {
 	val indx_free int = get_missiles_free_indx()
 
 	if indx_free != (-1) {
+		if puissance == 1 {
+			PlaySoundPtr(piou_aigue_sound)
+		} elif puissance == 3 {
+			PlaySoundPtr(piou_grave_sound)
+		}
 		missiles[indx_free] = InitMissile(positionX, positionY, puissance)
 		return 0
 	}
@@ -483,12 +488,10 @@ fn handle_events() int {
 
     if IsKeyPressed2(KEY_SPACE) {
 		spawn_missile((ship_x + (ship_width/2)), ship_y - 20, 1)
-		PlaySoundPtr(piou_aigue_sound)
 	}
 
 	if IsKeyPressed2(KEY_UP) {
 		spawn_missile((ship_x + (ship_width/2)), ship_y - 20, 3)
-		PlaySoundPtr(piou_grave_sound)
 	}
 
 	return 0
