@@ -93,12 +93,12 @@ Has a chance to spawn when a Cooloid is destroyed. It restores one health point.
 - **Right arrow:** Move right _(wth dude no way !)_
 - **Left arrow:** Move left
 - **Up arrow:** Shoot blue Coolckets (the powerful ones)\*
-- **Space bar:** Shoot red Coolckets  _(the normal ones)_
+- **Space bar:** Shoot red Coolckets _(the normal ones)_
 
 Now, try to **beat our records**:
 
 - **Sam5429:** ![sam best score](./img/end_sam.png)
-- **ArthurPV:** 740 points ![artur best score](./img/end_artur.png)
+- **ArthurPV:** ![artur best score](./img/end_artur.png)
 
 ---
 
@@ -107,3 +107,12 @@ Now, try to **beat our records**:
 ![Caution: Restricted Area](./img/caution)
 
 As mentioned in the blog, **only the craziest among you** will dare to venture into this section.
+
+This language is an interpreted language written in C.
+It’s completely unchecked, meaning there’s no type checking. If you make a mistake, the interpreter won’t help you find it, every error is basically a "fuck you" from the language itself.
+
+Code written in Coolang is:
+- Unmaintainable
+- Unstable
+- Full of mysterious errors
+- Absolutely not extensible *goodbye double_coolckets and explosion items :'(*
