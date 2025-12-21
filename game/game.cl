@@ -464,6 +464,7 @@ fn drawEnd() int {
 		ClearBackgroundRGBA(0, 0, 0, 255)
 		DrawTexturePtr(end_texture, 0, 0, 255, 255, 255, 255)
 		DrawTexturePtr(but_restart_texture, but_restart_x, but_restart_y, 255, 255, 255)
+		drawScore()
 	EndDrawing()
 
 	return 0
@@ -583,7 +584,7 @@ fn main() int {
 
 	end_texture = LoadTexturePtr("game/asset/fin.png")
 
-	but_restart_texture = LoadTexturePtr("game/asset/restart_1.png")
+	but_restart_texture = LoadTexturePtr("game/asset/restart.png")
 	but_restart_width = TextureWidth(but_restart_texture)
 	but_restart_heigt = TextureHeight(but_restart_texture)
 
