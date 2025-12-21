@@ -267,7 +267,7 @@ fn del_asteroid() int {
 				asteroids[i] = 0
 			}
 			elif GetHP_Asteroid(asteroids[i]) <= 0 {
-				if rand() % 100 < 100 {
+				if rand() % 100 < 30 {
 					spawn_healt_icon(GetPositionX_Asteroid(asteroids[i]), GetPositionY_Asteroid(asteroids[i]))
 				}
 				DeinitAsteroid(asteroids[i])
