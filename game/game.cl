@@ -547,6 +547,7 @@ fn resetupVar() int {
 	ship_y = (window_height - ship_height)
 
 	score = 0
+    asteroid_speed = 1
 }
 
 
