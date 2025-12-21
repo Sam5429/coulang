@@ -549,6 +549,9 @@ fn resetupVar() int {
 	ship_hp = 3
 	ship_x = 0
 	ship_y = (window_height - ship_height)
+	
+	health_icon_x = 0
+	health_icon_y = 0 
 
 	score = 0
     asteroid_speed = 1
