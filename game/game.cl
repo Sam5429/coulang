@@ -128,6 +128,12 @@ val asteroid_texture_mid ptr = 0
 val asteroid_texture_hard ptr = 0
 val asteroid_speed int = 1
 
+val health_icon_texture ptr = 0
+val health_icon_widht int = 0
+val health_icon_height int = 0
+val health_icon_x int = 0
+val health_icon_y int = 0
+
 val end_texture ptr = 0
 
 val but_restart_texture ptr = 0
@@ -226,20 +232,9 @@ fn spawn_asteroid(positionX int, positionY int) int {
 	return -1
 }
 
-fn has_asteroid() int {
-	val i int = 0
-	while i<asteroids_num {
-		if asteroids[i] != 0 {
-			return 1
-		}
-		i = (i+1)	
-	}
-	return 0
-}
-
 # create a line of asteroid
 fn generate_asteroid() int {
-	val pos_x int = (rand() % (700 - asteroid_width))
+	val pos_x int = (rand() % (window_width- asteroid_width))
 	while pos_x < window_width {
 		spawn_asteroid(pos_x, 0)
 		pos_x = (pos_x + (asteroid_width-2))
@@ -267,11 +262,31 @@ fn del_asteroid() int {
 				asteroids[i] = 0
 			}
 			elif GetHP_Asteroid(asteroids[i]) <= 0 {
+				if rand() % 100 < 100 {
+					spawn_healt_icon(GetPositionX_Asteroid(asteroids[i]), GetPositionY_Asteroid(asteroids[i]))
+				}
 				DeinitAsteroid(asteroids[i])
 				asteroids[i] = 0
 			}
 		}
 		i = (i+1)
+	}
+}
+
+fn spawn_healt_icon(positionX int, positionY int) int{
+	if health_icon_x == 0 {
+		if health_icon_y == 0 {
+			health_icon_x = positionX
+			health_icon_y = positionY
+		}
+	}
+}
+
+fn updatePosition_Items() int {
+	if health_icon_x != 0 {
+		if health_icon_y != 0 {
+			health_icon_y = (health_icon_y + 1)
+		}
 	}
 }
 
@@ -331,6 +346,18 @@ fn tcheck_colision() int {
 			}
 		}
 		i = (i+1)
+	}
+
+	# colision with the items
+	if colliding(health_icon_x, health_icon_y, health_icon_height, health_icon_widht, ship_x, ship_y, ship_height, ship_width) {
+		if ship_hp < 3 {
+			ship_hp = (ship_hp + 1)
+			health_icon_x = 0
+			health_icon_y = 0
+		}
+	} elif health_icon_y > window_height {
+		health_icon_y = 0
+		health_icon_x = 0
 	}
 }
 
@@ -419,6 +446,14 @@ fn drawHeart() int {
     return 0
 }
 
+fn drawHealthIcon() int {
+	if health_icon_x != 0 {
+		if health_icon_y != 0 {
+			DrawTexturePtr(health_icon_texture, health_icon_x, health_icon_y, 255, 255, 255, 255)
+		}
+	}
+}
+
 fn drawEnd() int {
 	BeginDrawing()
 		ClearBackgroundRGBA(0, 0, 0, 255)
@@ -467,6 +502,7 @@ fn gameTurn() int {
 	handle_events()
 	updatePosition_Missile()
 	updatePosition_Asteroid()
+	updatePosition_Items()
 
 	generate_asteroid()
 
@@ -481,6 +517,7 @@ fn gameTurn() int {
 		drawAsteroid()
 		drawScore()
         drawHeart()
+		drawHealthIcon()
 	EndDrawing()
 
 	return 0
@@ -535,6 +572,10 @@ fn main() int {
 
 	asteroid_texture_mid = LoadTexturePtr("game/asset/asteroid_medium.png")
 	asteroid_texture_hard = LoadTexturePtr("game/asset/asteroid_hard.png")
+
+	health_icon_texture = LoadTexturePtr("game/asset/health.png")
+	health_icon_widht = TextureWidth(health_icon_texture)
+	health_icon_height = TextureHeight(health_icon_texture)
 
 	end_texture = LoadTexturePtr("game/asset/fin.png")
 
